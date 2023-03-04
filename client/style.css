@@ -1,0 +1,130 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+@font-face {
+  font-family: "American Typewriter Bold";
+  src: url(./fonts/american-typewriter-bold.ttf);
+}
+
+@font-face {
+  font-family: "American Typewriter Regular";
+  src: url(./fonts/american-typewriter-regular.ttf);
+}
+
+main-page {
+  background-image: url(./resources/fondo.png);
+  display: grid;
+  grid-template-columns: auto;
+  grid-template-rows: auto auto auto;
+  gap: 50px;
+  justify-items: center;
+  height: 100vh;
+}
+
+enter-room-page {
+  background-image: url(./resources/fondo.png);
+  display: grid;
+  grid-template-columns: auto;
+  grid-template-rows: auto auto auto;
+  gap: 50px;
+  justify-items: center;
+  height: 100vh;
+}
+
+sign-in-page {
+  background-image: url(./resources/fondo.png);
+  display: grid;
+  grid-template-columns: auto;
+  grid-template-rows: auto auto auto;
+  gap: 50px;
+  justify-items: center;
+  height: 100vh;
+}
+
+error-page {
+  background-image: url(./resources/fondo.png);
+  display: grid;
+  grid-template-columns: auto;
+  grid-template-rows: auto auto auto;
+  gap: 50px;
+  justify-items: center;
+  height: 100vh;
+}
+
+share-code-page {
+  background-image: url(./resources/fondo.png);
+  display: grid;
+  grid-template-columns: auto auto;
+  grid-template-rows: auto auto auto;
+  gap: 50px;
+  justify-items: center;
+  height: 100vh;
+}
+
+waiting-page {
+  background-image: url(./resources/fondo.png);
+  display: grid;
+  grid-template-columns: auto auto;
+  grid-template-rows: auto auto auto;
+  gap: 50px;
+  justify-items: center;
+  height: 100vh;
+}
+
+start-page {
+  background-image: url(./resources/fondo.png);
+  display: grid;
+  grid-template-columns: auto auto;
+  grid-template-rows: auto auto auto auto;
+  gap: 50px;
+  justify-items: center;
+  height: 100vh;
+}
+
+countdown-page {
+  background-image: url(./resources/fondo.png);
+  display: grid;
+  grid-template-columns: auto;
+  grid-template-rows: auto auto;
+  gap: 50px;
+  justify-items: center;
+  height: 100vh;
+}
+
+moves-page {
+  background-image: url(./resources/fondo.png);
+  display: grid;
+  justify-content: center;
+  height: 100vh;
+}
+
+results-page {
+  background-image: url(./resources/Rectangle-1.png);
+  display: grid;
+  align-content: space-around;
+  height: 100vh;
+}
+
+/* .result-page-draw__screen {
+  background-image: url(./resources/Rectangle-3.png);
+  display: grid;
+  align-content: space-around;
+  height: 100vh;
+}
+.result-page-cpu-wins__screen {
+  background-image: url(./resources/Rectangle-2.png);
+  display: grid;
+  align-content: space-around;
+  height: 100vh;
+}
+.result-page-user-wins__screen {
+  background-image: url(./resources/Rectangle-1.png);
+  display: grid;
+  align-content: space-around;
+  height: 100vh;
+} */
