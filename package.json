@@ -5,7 +5,7 @@
   "license": "MIT",
   "scripts": {
     "dev:front": "parcel serve ./client/index.html",
-    "dev:back": "nodemon --watch ./server/index.ts --exec ts-node ./server/dev.ts",
+    "dev:back": "nodemon --watch ./server/index.ts --exec ts-node ./server/index.ts",
     "build:front": "parcel build ./client/index.html",
     "build:back": "tsc",
     "build": "npm run build:front && npm run build:back",

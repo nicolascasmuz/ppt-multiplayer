@@ -21,8 +21,8 @@ import "./pages/results-page";
 
 import "./router";
 
-/* import { state } from "./state"; */
+import { state } from "./state";
 
 (function () {
-  /* state.init(); */
+  state.init();
 })();

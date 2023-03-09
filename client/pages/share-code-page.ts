@@ -1,21 +1,37 @@
+import { state } from "../state";
+
 customElements.define(
   "share-code-page",
   class extends HTMLElement {
-    shadow: ShadowRoot;
     roomId: string;
-    constructor() {
-      super();
-      this.shadow = this.attachShadow({ mode: "open" });
+    connectedCallback() {
+      state.subscribe(() => {
+        const currentState = state.getState();
+        this.roomId = currentState.roomId;
+        this.render();
+      });
+
+      setTimeout(function () {
+        state.setRTDBdata(true);
+        state.listenToRoom();
+      }, 3000);
+
+      window.addEventListener("beforeunload", function (event) {
+        state.setRTDBdata(false);
+      });
+
       this.render();
     }
     render() {
-      this.shadow.innerHTML = `
+      this.innerHTML = `
               <score-comp></score-comp>
-              <room-id-comp></room-id-comp>
+              <room-id-comp room-id=${
+                this.roomId ? this.roomId : ""
+              }></room-id-comp>
               <div class="text-container">
                 <p class="text-share-code1">Compartí el código:</p>
                 <span class="text-room-id">${
-                  this.roomId ? this.roomId : "59_c_"
+                  this.roomId ? this.roomId : "cargando..."
                 }</span>
                 <p class="text-share-code2">con tu contrincante</p>
               </div>
@@ -61,7 +77,7 @@ customElements.define(
             }
               `;
 
-      this.shadow.appendChild(style);
+      this.appendChild(style);
     }
   }
 );

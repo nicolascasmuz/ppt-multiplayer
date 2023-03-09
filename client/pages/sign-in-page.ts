@@ -1,19 +1,38 @@
+import { Router } from "@vaadin/router";
+import { state } from "../state";
+
 customElements.define(
   "sign-in-page",
   class extends HTMLElement {
-    shadow: ShadowRoot;
-    constructor() {
-      super();
-      this.shadow = this.attachShadow({ mode: "open" });
+    connectedCallback() {
       this.render();
+
+      const cs = state.getState();
+
+      const signInFormEl = this.querySelector(".sign-in__form") as HTMLElement;
+
+      signInFormEl.addEventListener("submit", (e: any) => {
+        e.preventDefault();
+        const nameValue = e.target["nombre"].value;
+        state.setFullname(nameValue);
+        if (cs.existingRoom == "") {
+          state.signIn(() => {
+            state.askNewRoom();
+          });
+          Router.go("/share-code");
+        } else {
+          state.signIn();
+          Router.go("/share-code");
+        }
+      });
     }
     render() {
-      this.shadow.innerHTML = `
+      this.innerHTML = `
           <main-title-comp title="Piedra Papel o Tijera"></main-title-comp>
-          <div class="button-container">
-            <text-field-comp text="tu nombre"></text-field-comp>
-            <button-comp class="button__ingresar-sala" text="Empezar"></button-comp>
-          </div>
+          <form class="sign-in__form">
+            <text-field-comp type="text" name="nombre" placeholder="'tu nombre'"></text-field-comp>
+            <button-comp class="button__ingresar-sala">Empezar</button-comp>
+          </form>
           <hands-comp></hands-comp>
         `;
 
@@ -24,7 +43,7 @@ customElements.define(
             align-self: center;
             margin-top: 25px;
           }
-          .button-container {
+          .sign-in__form {
             grid-row: 2;
             display: flex;
             flex-direction: column;
@@ -38,7 +57,7 @@ customElements.define(
           }
           `;
 
-      this.shadow.appendChild(style);
+      this.appendChild(style);
     }
   }
 );

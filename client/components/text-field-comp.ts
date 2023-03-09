@@ -1,20 +1,23 @@
 customElements.define(
   "text-field-comp",
   class extends HTMLElement {
-    shadow: ShadowRoot;
-    text: string;
+    /* shadow: ShadowRoot; */
+    type: string;
+    name: string;
+    placeholder: string;
     constructor() {
       super();
-      this.shadow = this.attachShadow({ mode: "open" });
+      /* this.shadow = this.attachShadow({ mode: "open" }); */
       this.render();
     }
     render() {
-      this.text = this.getAttribute("text") || "";
+      this.type = this.getAttribute("type") || "";
+      this.name = this.getAttribute("name") || "";
+      this.placeholder = this.getAttribute("placeholder") || "";
 
-      const input = document.createElement("input");
-      input.type = "text";
-      input.placeholder = this.text;
-      input.classList.add("input");
+      this.innerHTML = `
+        <input class="input" type=${this.type} name=${this.name} placeholder=${this.placeholder}>
+      `;
 
       const style = document.createElement("style");
       style.innerHTML = `
@@ -26,14 +29,15 @@ customElements.define(
             font-family: 'Odibee Sans', cursive;
             font-size: 45px;
             text-align: center;
-            width: 300px;
-            height: 72px;
+            width: 322px;
+            height: 87px;
             margin: 0;
         }
       `;
 
-      this.shadow.appendChild(input);
-      this.shadow.appendChild(style);
+      /* this.shadow.appendChild(input); */
+      /* this.shadow.appendChild(style); */
+      this.appendChild(style);
     }
   }
 );

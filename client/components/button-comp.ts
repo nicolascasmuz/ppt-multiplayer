@@ -1,19 +1,14 @@
 customElements.define(
   "button-comp",
   class extends HTMLElement {
-    shadow: ShadowRoot;
-    text: string;
     constructor() {
       super();
-      this.shadow = this.attachShadow({ mode: "open" });
       this.render();
     }
     render() {
-      this.text = this.getAttribute("text") || "";
-
-      const button = document.createElement("button");
-      button.classList.add("button");
-      button.textContent = this.text;
+      this.innerHTML = `
+        <button class="button">${this.textContent}</button>
+      `;
 
       const style = document.createElement("style");
       style.innerHTML = `
@@ -30,8 +25,7 @@ customElements.define(
         }
       `;
 
-      this.shadow.appendChild(button);
-      this.shadow.appendChild(style);
+      this.appendChild(style);
     }
   }
 );

@@ -9,7 +9,7 @@ customElements.define(
       this.render();
     }
     render() {
-      this.roomId = this.getAttribute("room-id") || "59_c_";
+      this.roomId = this.getAttribute("room-id") || "";
 
       const div = document.createElement("div");
       div.classList.add("room-id-comp__div");

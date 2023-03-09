@@ -13,7 +13,7 @@ customElements.define(
                 <score-comp></score-comp>
                 <room-id-comp></room-id-comp>
                 <p class="text-start">Presioná jugar y elegí: piedra, papel o tijera antes de que pasen los 3 segundos.</p>
-                <button-comp text="¡Jugar!"></button-comp>
+                <button-comp>¡Jugar!</button-comp>
                 <hands-comp></hands-comp>
               `;
 
