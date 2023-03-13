@@ -2,106 +2,157 @@ const piedraImg = require("url:../resources/piedra.png");
 const papelImg = require("url:../resources/papel.png");
 const tijeraImg = require("url:../resources/tijera.png");
 import { defaultMaxListeners } from "events";
-/* import { state } from "../state"; */
+import { Router } from "@vaadin/router";
+import { state } from "../state";
 
 customElements.define(
   "moves-page",
   class extends HTMLElement {
-    shadow: ShadowRoot;
-    constructor() {
-      super();
-      this.shadow = this.attachShadow({ mode: "open" });
+    connectedCallback() {
+      setTimeout(() => {
+        state.getWinner();
+        state.getMyWins();
+        state.getOpponentWins();
+        state.listenResults();
+        Router.go("/results");
+      }, 3000);
+
       this.render();
     }
     render() {
-      const div = document.createElement("div");
-      div.classList.add("moves-comp__div");
+      const cg = state.getMoves();
 
-      div.innerHTML = `
-          <img class="top-hand" src=${piedraImg}></img>
-          <img class="bottom-hand" src=${papelImg}></img>
+      if (cg.opponentMove == "rock" && cg.myMove == "rock") {
+        this.innerHTML = `
+          <div class="moves-comp__div">
+            <img class="top-hand" src=${piedraImg}></img>
+            <img class="bottom-hand" src=${piedraImg}></img>
+          </div>
         `;
-
-      /* if (currentMoves.cpuMove == "piedra" && currentMoves.myMove == "piedra") {
-    div.innerHTML = `
-          <img class="top-hand" src=${piedraImg}></img>
-          <img class="bottom-hand" src=${piedraImg}></img>
+      }
+      if (cg.opponentMove == "paper" && cg.myMove == "paper") {
+        this.innerHTML = `
+          <div class="moves-comp__div">
+            <img class="top-hand" src=${papelImg}></img>
+            <img class="bottom-hand" src=${papelImg}></img>
+          </div>
         `;
-
-    div.appendChild(style);
-    return div;
-  }
-  if (currentMoves.cpuMove == "papel" && currentMoves.myMove == "papel") {
-    div.innerHTML = `
-          <img class="top-hand" src=${papelImg}></img>
-          <img class="bottom-hand" src=${papelImg}></img>
+      }
+      if (cg.opponentMove == "scissors" && cg.myMove == "scissors") {
+        this.innerHTML = `
+          <div class="moves-comp__div">
+            <img class="top-hand" src=${tijeraImg}></img>
+            <img class="bottom-hand" src=${tijeraImg}></img>
+          </div>
         `;
-
-    div.appendChild(style);
-    return div;
-  }
-  if (currentMoves.cpuMove == "tijera" && currentMoves.myMove == "tijera") {
-    div.innerHTML = `
-          <img class="top-hand" src=${tijeraImg}></img>
-          <img class="bottom-hand" src=${tijeraImg}></img>
+      }
+      if (cg.opponentMove == "rock" && cg.myMove == "scissors") {
+        this.innerHTML = `
+          <div class="moves-comp__div">
+            <img class="top-hand" src=${piedraImg}></img>
+            <img class="bottom-hand" src=${tijeraImg}></img>
+          </div>
         `;
-
-    div.appendChild(style);
-    return div;
-  }
-  if (currentMoves.cpuMove == "piedra" && currentMoves.myMove == "tijera") {
-    div.innerHTML = `
-          <img class="top-hand" src=${piedraImg}></img>
-          <img class="bottom-hand" src=${tijeraImg}></img>
+      }
+      if (cg.opponentMove == "paper" && cg.myMove == "rock") {
+        this.innerHTML = `
+          <div class="moves-comp__div">
+            <img class="top-hand" src=${papelImg}></img>
+            <img class="bottom-hand" src=${piedraImg}></img>
+          </div>
         `;
-
-    div.appendChild(style);
-    return div;
-  }
-  if (currentMoves.cpuMove == "papel" && currentMoves.myMove == "piedra") {
-    div.innerHTML = `
-          <img class="top-hand" src=${papelImg}></img>
-          <img class="bottom-hand" src=${piedraImg}></img>
+      }
+      if (cg.opponentMove == "scissors" && cg.myMove == "paper") {
+        this.innerHTML = `
+          <div class="moves-comp__div">
+            <img class="top-hand" src=${tijeraImg}></img>
+            <img class="bottom-hand" src=${papelImg}></img>
+          </div>
         `;
-
-    div.appendChild(style);
-    return div;
-  }
-  if (currentMoves.cpuMove == "tijera" && currentMoves.myMove == "papel") {
-    div.innerHTML = `
-          <img class="top-hand" src=${tijeraImg}></img>
-          <img class="bottom-hand" src=${papelImg}></img>
+      }
+      if (cg.opponentMove == "scissors" && cg.myMove == "rock") {
+        this.innerHTML = `
+          <div class="moves-comp__div">
+            <img class="top-hand" src=${tijeraImg}></img>
+            <img class="bottom-hand" src=${piedraImg}></img>
+          </div>
         `;
-
-    div.appendChild(style);
-    return div;
-  }
-  if (currentMoves.cpuMove == "tijera" && currentMoves.myMove == "piedra") {
-    div.innerHTML = `
-          <img class="top-hand" src=${tijeraImg}></img>
-          <img class="bottom-hand" src=${piedraImg}></img>
+      }
+      if (cg.opponentMove == "paper" && cg.myMove == "scissors") {
+        this.innerHTML = `
+          <div class="moves-comp__div">
+            <img class="top-hand" src=${papelImg}></img>
+            <img class="bottom-hand" src=${tijeraImg}></img>
+          </div>
         `;
-
-    div.appendChild(style);
-    return div;
-  }
-  if (currentMoves.cpuMove == "papel" && currentMoves.myMove == "tijera") {
-    div.innerHTML = `
-          <img class="top-hand" src=${papelImg}></img>
-          <img class="bottom-hand" src=${tijeraImg}></img>
+      }
+      if (cg.opponentMove == "rock" && cg.myMove == "paper") {
+        this.innerHTML = `
+          <div class="moves-comp__div">
+            <img class="top-hand" src=${piedraImg}></img>
+            <img class="bottom-hand" src=${papelImg}></img>
+          </div>
         `;
-
-    div.appendChild(style);
-    return div;
-  }
-  if (currentMoves.cpuMove == "piedra" && currentMoves.myMove == "papel") {
-    div.innerHTML = `
-          <img class="top-hand" src=${piedraImg}></img>
-          <img class="bottom-hand" src=${papelImg}></img>
-        `; */
+      }
+      if (cg.opponentMove == "" && cg.myMove == "") {
+        console.log("entró en este if");
+        this.innerHTML = `
+          <div class="moves-comp__div">
+            <h1 class="top-?">¿</h1>
+            <h1 class="bottom-no-move">?</h1>
+          </div>
+        `;
+      }
+      if (cg.opponentMove == "" && cg.myMove == "rock") {
+        this.innerHTML = `
+          <div class="moves-comp__div">
+            <h1 class="top-no-move">¿</h1>
+            <img class="bottom-hand" src=${piedraImg}></img>
+          </div>
+        `;
+      }
+      if (cg.opponentMove == "" && cg.myMove == "paper") {
+        this.innerHTML = `
+          <div class="moves-comp__div">
+            <h1 class="top-no-move">¿</h1>
+            <img class="bottom-hand" src=${papelImg}></img>
+          </div>
+        `;
+      }
+      if (cg.opponentMove == "" && cg.myMove == "scissors") {
+        this.innerHTML = `
+          <div class="moves-comp__div">
+            <h1 class="top-no-move">¿</h1>
+            <img class="bottom-hand" src=${tijeraImg}></img>
+          </div>
+        `;
+      }
+      if (cg.opponentMove == "rock" && cg.myMove == "") {
+        this.innerHTML = `
+          <div class="moves-comp__div">
+            <img class="top-hand" src=${piedraImg}></img>
+            <h1 class="bottom-no-move">?</h1>
+          </div>
+        `;
+      }
+      if (cg.opponentMove == "paper" && cg.myMove == "") {
+        this.innerHTML = `
+          <div class="moves-comp__div">
+            <img class="top-hand" src=${papelImg}></img>
+            <h1 class="bottom-no-move">?</h1>
+          </div>
+        `;
+      }
+      if (cg.opponentMove == "scissors" && cg.myMove == "") {
+        this.innerHTML = `
+          <div class="moves-comp__div">
+            <img class="top-hand" src=${tijeraImg}></img>
+            <h1 class="bottom-no-move">?</h1>
+          </div>
+        `;
+      }
 
       const style = document.createElement("style");
-
       style.innerHTML = `
         .moves-comp__div {
           display: grid;
@@ -121,10 +172,25 @@ customElements.define(
           height: 312px;
           align-self: flex-end;
         }
-    `;
+        .top-no-move {
+          color: #009048;
+          font-family: "American Typewriter Bold";
+          font-size: 180px;
+          margin: 0 auto;
+          -webkit-transform: rotate(-180deg);
+          -moz-transform: rotate(-180deg);
+          -ms-transform: rotate(-180deg);
+          transform: rotate(-180deg);
+        }
+        .bottom-no-move {
+          color: #009048;
+          font-family: "American Typewriter Bold";
+          font-size: 180px;
+          margin: 0 auto;
+        }
+        `;
 
-      this.shadow.appendChild(div);
-      this.shadow.appendChild(style);
+      this.appendChild(style);
     }
   }
 );

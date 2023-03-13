@@ -1,19 +1,34 @@
+import { Router } from "@vaadin/router";
+import { state } from "../state";
+
 customElements.define(
   "start-page",
   class extends HTMLElement {
-    shadow: ShadowRoot;
-    opponent: String;
-    constructor() {
-      super();
-      this.shadow = this.attachShadow({ mode: "open" });
+    connectedCallback() {
       this.render();
+
+      const cs = state.getState();
+
+      const startButtonEl = this.querySelector(".button__start") as HTMLElement;
+
+      startButtonEl.addEventListener("click", () => {
+        state.setStart(true);
+        state.setRTDBdata();
+        Router.go("/waiting");
+      });
     }
     render() {
-      this.shadow.innerHTML = `
-                <score-comp></score-comp>
-                <room-id-comp></room-id-comp>
+      const cs = state.getState();
+
+      this.innerHTML = `
+                <score-comp player1-name='${cs.fullname}' player2-name='${
+        cs.opponentData ? cs.opponentData.fullname : ""
+      }'></score-comp>
+                <room-id-comp room-id=${
+                  cs.roomId ? cs.roomId : ""
+                }></room-id-comp>
                 <p class="text-start">Presioná jugar y elegí: piedra, papel o tijera antes de que pasen los 3 segundos.</p>
-                <button-comp>¡Jugar!</button-comp>
+                <button-comp class="button__start">¡Jugar!</button-comp>
                 <hands-comp></hands-comp>
               `;
 
@@ -52,7 +67,7 @@ customElements.define(
                 }
                 `;
 
-      this.shadow.appendChild(style);
+      this.appendChild(style);
     }
   }
 );

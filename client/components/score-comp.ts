@@ -1,3 +1,5 @@
+import { state } from "../state";
+
 customElements.define(
   "score-comp",
   class extends HTMLElement {
@@ -12,8 +14,8 @@ customElements.define(
       this.render();
     }
     render() {
-      this.player1 = this.getAttribute("player1-name") || "player1";
-      this.player2 = this.getAttribute("player2-name") || "player2";
+      this.player1 = this.getAttribute("player1-name") || "";
+      this.player2 = this.getAttribute("player2-name") || "";
 
       this.score1 = this.getAttribute("score1-name") || "0";
       this.score2 = this.getAttribute("score2-name") || "0";
@@ -22,8 +24,12 @@ customElements.define(
       div.classList.add("score-comp__div");
 
       div.innerHTML = `
-        <p class="score-comp__p1">${this.player1}: <span class="score-comp__s1">${this.score1}</span></p>
-        <p class="score-comp__p2">${this.player2}: <span class="score-comp__s2">${this.score2}</span></p>
+        <p class="score-comp__p1">${
+          this.player1 ? this.player1 : "jugador 1"
+        }: <span class="score-comp__s1">${this.score1}</span></p>
+        <p class="score-comp__p2">${
+          this.player2 ? this.player2 : "jugador 2"
+        }: <span class="score-comp__s2">${this.score2}</span></p>
       `;
 
       const style = document.createElement("style");

@@ -1,6 +1,7 @@
 import "./components/button-comp";
 import "./components/main-title-comp";
 import "./components/hands-comp";
+import "./components/rock-paper-scissors-comp";
 import "./components/text-field-comp";
 import "./components/score-comp";
 import "./components/room-id-comp";

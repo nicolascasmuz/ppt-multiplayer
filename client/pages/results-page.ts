@@ -1,6 +1,3 @@
-var cpuMove = "tijera";
-var myMove = "piedra";
-
 const resultGreenStarImg = require("url:../resources/Star-1.png");
 const resultRedStarImg = require("url:../resources/Star-2.png");
 const resultYellowStarImg = require("url:../resources/Star-3.png");
@@ -9,59 +6,110 @@ const rectangleOne = require("url:../resources/Rectangle-1.png");
 const rectangleTwo = require("url:../resources/Rectangle-2.png");
 const rectangleThree = require("url:../resources/Rectangle-3.png");
 
+import { Router } from "@vaadin/router";
+import { state } from "../state";
+
 customElements.define(
   "results-page",
   class extends HTMLElement {
-    shadow: ShadowRoot;
-    constructor() {
-      super();
-      this.shadow = this.attachShadow({ mode: "open" });
+    connectedCallback() {
+      setTimeout(() => {
+        this.render();
+        state.setStart(false);
+        state.setMove("");
+        state.setRTDBdata();
+
+        const ReturnButtonEl = this.querySelector(
+          ".button__return"
+        ) as HTMLElement;
+
+        ReturnButtonEl.addEventListener("click", () => {
+          Router.go("/start");
+        });
+      }, 2000);
+
       this.render();
     }
     render() {
-      const div = document.createElement("div");
+      const cg = state.getMoves();
 
       if (
-        (cpuMove == "piedra" && myMove == "piedra") ||
-        (cpuMove == "papel" && myMove == "papel") ||
-        (cpuMove == "tijera" && myMove == "tijera")
+        (cg.opponentMove == "rock" && cg.myMove == "rock") ||
+        (cg.opponentMove == "paper" && cg.myMove == "paper") ||
+        (cg.opponentMove == "scissors" && cg.myMove == "scissors")
       ) {
-        div.classList.add("result-page-draw__screen");
-        div.innerHTML = `
+        this.innerHTML = `
+            <div class="result-page-draw__screen">
               <star-comp text="Empate" img="${resultYellowStarImg}"></star-comp>
-              <results-chart-comp title="Puntaje" my-result="0" cpu-result="0"></results-chart-comp>
-              <button-comp class="result-page-button">Volver a jugar</button-comp>
-            `;
-
-        this.shadow.appendChild(div);
+              <results-chart-comp title="Puntaje" my-result="${state.getMyWins()}" opponent-result="${state.getOpponentWins()}"></results-chart-comp>
+              <button-comp class="button__return">Volver a jugar</button-comp>
+            </div>
+        `;
       }
       if (
-        (cpuMove == "piedra" && myMove == "tijera") ||
-        (cpuMove == "papel" && myMove == "piedra") ||
-        (cpuMove == "tijera" && myMove == "papel")
+        (cg.opponentMove == "rock" && cg.myMove == "scissors") ||
+        (cg.opponentMove == "paper" && cg.myMove == "rock") ||
+        (cg.opponentMove == "scissors" && cg.myMove == "paper")
       ) {
-        div.classList.add("result-page-cpu-wins__screen");
-        div.innerHTML = `
+        this.innerHTML = `
+            <div class="result-page-cpu-wins__screen">
               <star-comp text="Perdiste" img="${resultRedStarImg}"></star-comp>
-              <results-chart-comp title="Puntaje" my-result="0" cpu-result="0"></results-chart-comp>
-              <button-comp class="result-page-button">Volver a jugar</button-comp>
-            `;
-
-        this.shadow.appendChild(div);
+              <results-chart-comp title="Puntaje" my-result="${state.getMyWins()}" opponent-result="${state.getOpponentWins()}"></results-chart-comp>
+              <button-comp class="button__return">Volver a jugar</button-comp>
+            </div>
+        `;
       }
       if (
-        (cpuMove == "tijera" && myMove == "piedra") ||
-        (cpuMove == "papel" && myMove == "tijera") ||
-        (cpuMove == "piedra" && myMove == "papel")
+        (cg.opponentMove == "scissors" && cg.myMove == "rock") ||
+        (cg.opponentMove == "paper" && cg.myMove == "scissors") ||
+        (cg.opponentMove == "rock" && cg.myMove == "paper")
       ) {
-        div.classList.add("result-page-user-wins__screen");
-        div.innerHTML = `
+        this.innerHTML = `
+            <div class="result-page-user-wins__screen">
               <star-comp text="Ganaste" img="${resultGreenStarImg}"></star-comp>
-              <results-chart-comp title="Puntaje" my-result="0" cpu-result="0"></results-chart-comp>
-              <button-comp class="result-page-button">Volver a jugar</button-comp>
-            `;
-
-        this.shadow.appendChild(div);
+              <results-chart-comp title="Puntaje" my-result="${state.getMyWins()}" opponent-result="${state.getOpponentWins()}"></results-chart-comp>
+              <button-comp class="button__return">Volver a jugar</button-comp>
+            </div>
+        `;
+      }
+      if (
+        (cg.opponentMove == "" && cg.myMove == "") ||
+        (cg.opponentMove == "" && cg.myMove == "") ||
+        (cg.opponentMove == "" && cg.myMove == "")
+      ) {
+        this.innerHTML = `
+            <div class="result-page-draw__screen">
+              <star-comp text="Empate" img="${resultYellowStarImg}"></star-comp>
+              <results-chart-comp title="Puntaje" my-result="${state.getMyWins()}" opponent-result="${state.getOpponentWins()}"></results-chart-comp>
+              <button-comp class="button__return">Volver a jugar</button-comp>
+            </div>
+        `;
+      }
+      if (
+        (cg.opponentMove == "rock" && cg.myMove == "") ||
+        (cg.opponentMove == "paper" && cg.myMove == "") ||
+        (cg.opponentMove == "scissors" && cg.myMove == "")
+      ) {
+        this.innerHTML = `
+            <div class="result-page-cpu-wins__screen">
+              <star-comp text="Perdiste" img="${resultRedStarImg}"></star-comp>
+              <results-chart-comp title="Puntaje" my-result="${state.getMyWins()}" opponent-result="${state.getOpponentWins()}"></results-chart-comp>
+              <button-comp class="button__return">Volver a jugar</button-comp>
+            </div>
+        `;
+      }
+      if (
+        (cg.opponentMove == "" && cg.myMove == "rock") ||
+        (cg.opponentMove == "" && cg.myMove == "scissors") ||
+        (cg.opponentMove == "" && cg.myMove == "paper")
+      ) {
+        this.innerHTML = `
+            <div class="result-page-user-wins__screen">
+              <star-comp text="Ganaste" img="${resultGreenStarImg}"></star-comp>
+              <results-chart-comp title="Puntaje" my-result="${state.getMyWins()}" opponent-result="${state.getOpponentWins()}"></results-chart-comp>
+              <button-comp class="button__return">Volver a jugar</button-comp>
+            </div>
+        `;
       }
 
       const style = document.createElement("style");
@@ -107,7 +155,8 @@ customElements.define(
           }
           `;
 
-      this.shadow.appendChild(style);
+      this.appendChild(style);
     }
+    addListeners() {}
   }
 );

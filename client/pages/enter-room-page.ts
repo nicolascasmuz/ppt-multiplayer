@@ -16,11 +16,13 @@ customElements.define(
       signInFormEl.addEventListener("submit", (e: any) => {
         e.preventDefault();
         const codeValue = e.target["codigo"].value;
-        state.getExistingRoom(codeValue).then(() => {
-          if (cs.existingRoom == true) {
-            Router.go("/sign-in");
-          }
-        });
+        if (codeValue != "") {
+          state.getExistingRoom(codeValue).then(() => {
+            if (cs.existingRoom == true) {
+              Router.go("/sign-in");
+            }
+          });
+        }
       });
     }
     render() {

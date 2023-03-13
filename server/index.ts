@@ -102,13 +102,29 @@ app.post("/rtdb-data", (req, res) => {
   const { rtdbRoomId } = req.body;
   const { userId } = req.body;
   const { fullname } = req.body;
-  const { state } = req.body;
+  const { online } = req.body;
+  const { start } = req.body;
+  const { move } = req.body;
 
   const roomMessagesRef = rtdb.ref(`rooms/${rtdbRoomId}/currentGame/${userId}`);
 
   roomMessagesRef
-    .set({ fullname: fullname, online: state })
+    .set({
+      fullname: fullname,
+      start: start,
+      online: online,
+      move: move,
+    })
     .then((r) => res.json(r));
+});
+
+app.delete("/remove-player", (req, res) => {
+  const { rtdbRoomId } = req.body;
+  const { userId } = req.body;
+
+  const roomMessagesRef = rtdb.ref(`rooms/${rtdbRoomId}/currentGame/${userId}`);
+
+  roomMessagesRef.remove().then((r) => res.json(r));
 });
 
 app.get("/rtdb-data/:roomId", (req, res) => {
@@ -121,6 +137,15 @@ app.get("/rtdb-data/:roomId", (req, res) => {
       const data = roomData.data();
       res.json(data);
     });
+});
+
+app.post("/history", (req, res) => {
+  const { rtdbRoomId } = req.body;
+  const { result } = req.body;
+
+  const roomMessagesRef = rtdb.ref(`rooms/${rtdbRoomId}/history`);
+
+  roomMessagesRef.push({ result: result }).then((r) => res.json(r));
 });
 
 app.delete("/deleteroom", (req, res) => {

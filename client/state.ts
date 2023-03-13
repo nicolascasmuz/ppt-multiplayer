@@ -1,4 +1,5 @@
 import { rtdb } from "./rtdb";
+import { map } from "lodash";
 
 const API_BASE_URL = "http://localhost:3000";
 
@@ -10,7 +11,7 @@ if (process.env.ENV == "development") {
   api.url = process.env.BACKEND_URL;
 } */
 
-type Move = "piedra" | "papel" | "tijera";
+type Move = "rock" | "paper" | "scissors" | "";
 
 export const state = {
   data: {
@@ -19,11 +20,10 @@ export const state = {
     roomId: "",
     rtdbRoomId: "",
     existingRoom: "",
-    rtdbData: {},
-    currentGame: {
-      myMove: "",
-      cpuMove: "",
-    },
+    start: "",
+    online: "",
+    myMove: "",
+    opponentData: "",
     history: [],
   },
   listeners: [],
@@ -34,6 +34,11 @@ export const state = {
       roomId: "",
       rtdbRoomId: "",
       existingRoom: "",
+      start: "",
+      online: "",
+      myMove: "",
+      opponentData: "",
+      history: [],
     };
 
     const localData: any = localStorage.getItem("saved-state");
@@ -71,41 +76,32 @@ export const state = {
 
     this.setState(cs);
   },
+  setStart(state: Boolean) {
+    const cs = this.getState();
+    cs.start = state;
+
+    this.setState(cs);
+  },
   async signIn(callback?) {
     const cs = this.getState();
 
-    if (cs.existingRoom == "") {
-      await fetch(API_BASE_URL + "/auth", {
-        method: "post",
-        headers: {
-          "content-type": "application/json",
-        },
-        body: JSON.stringify({ fullname: cs.fullname }),
+    await fetch(API_BASE_URL + "/auth", {
+      method: "post",
+      headers: {
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({ fullname: cs.fullname }),
+    })
+      .then((res) => {
+        return res.json();
       })
-        .then((res) => {
-          return res.json();
-        })
-        .then((data) => {
-          cs.userId = data.id;
-          this.setState(cs);
+      .then((data) => {
+        cs.userId = data.id;
+        this.setState(cs);
+        if (callback) {
           callback();
-        });
-    } else if (cs.existingRoom == true) {
-      await fetch(API_BASE_URL + "/auth", {
-        method: "post",
-        headers: {
-          "content-type": "application/json",
-        },
-        body: JSON.stringify({ fullname: cs.fullname }),
-      })
-        .then((res) => {
-          return res.json();
-        })
-        .then((data) => {
-          cs.userId = data.id;
-          this.setState(cs);
-        });
-    }
+        }
+      });
   },
   async getExistingRoom(inputRoomid) {
     const cs = this.getState();
@@ -151,7 +147,7 @@ export const state = {
         }
       });
   },
-  async setRTDBdata(state: Boolean) {
+  async setRTDBdata(state?: Boolean) {
     const cs = this.getState();
 
     await fetch(API_BASE_URL + "/rtdb-data", {
@@ -163,7 +159,9 @@ export const state = {
         rtdbRoomId: cs.rtdbRoomId,
         userId: cs.userId,
         fullname: cs.fullname,
-        state: state,
+        online: cs.online,
+        start: cs.start,
+        move: cs.myMove,
       }),
     });
 
@@ -172,77 +170,146 @@ export const state = {
   listenToRoom() {
     const cs = this.getState();
 
-    console.log("se ejecutó listenToRoom");
-
-    const roomsRef = rtdb.ref("/rooms/" + cs.rtdbRoomId);
+    const roomsRef = rtdb.ref("/rooms/" + cs.rtdbRoomId + "/currentGame/");
     roomsRef.on("value", (snapshot) => {
       const dataFromServer = snapshot.val();
-      console.log("rtdb data: ", dataFromServer);
+      const dataArray = [dataFromServer];
+      const makeNewArray = Object.entries(dataArray[0]);
+
+      if (!makeNewArray[1]) {
+        null;
+      } else {
+        const idArray = [makeNewArray[0][0], makeNewArray[1][0]];
+
+        const filteredId = idArray.filter((id) => {
+          return id != cs.userId;
+        });
+
+        cs.opponentData = dataFromServer[filteredId[0]];
+      }
+
+      this.setState(cs);
+    });
+  },
+  async listenResults() {
+    const cs = this.getState();
+
+    const chatroomsRef = rtdb.ref("/rooms/" + cs.rtdbRoomId);
+    await chatroomsRef.on("value", (snapshot) => {
+      const currentState = this.getState();
+      const messagesFromServer = snapshot.val();
+      const messagesList = map(messagesFromServer.history);
+
+      const resultsArray: any = [];
+
+      for (const i of messagesList) {
+        resultsArray.push(i);
+      }
+
+      currentState.history = resultsArray;
+
+      this.setState(currentState);
     });
   },
   getMoves() {
-    const currentState = this.getState();
-    return currentState.currentGame;
+    const cs = this.getState();
+
+    const currentGame = {
+      myMove: cs.myMove,
+      opponentMove: cs.opponentData.move,
+    };
+
+    return currentGame;
   },
-  setMoves(getMove: Move) {
-    const currentState = this.getState();
+  setMove(Move: Move) {
+    const cs = this.getState();
 
     // OBTIENE LA JUGADA DEL USUARIO
-    currentState.currentGame.myMove = getMove;
-
-    // GENERA LA JUGADA DEL CPU
-    const movesArray = ["piedra", "papel", "tijera"];
-    const randomMove =
-      movesArray[Math.floor(Math.random() * movesArray.length)];
-    currentState.currentGame.cpuMove = randomMove;
-
-    // PASA LOS PARÁMETROS A getWinner()
-    this.getWinner(getMove, randomMove);
+    cs.myMove = Move;
 
     // SETEA EL STATE
-    this.setState(currentState);
+    this.setState(cs);
   },
-  getWinner(myMove: Move, cpuMove: Move) {
-    const currentState = this.getState();
+  getWinner() {
+    const cs = this.getState();
 
     if (
-      (myMove == "piedra" && cpuMove == "piedra") ||
-      (myMove == "papel" && cpuMove == "papel") ||
-      (myMove == "tijera" && cpuMove == "tijera")
+      (cs.myMove == "rock" && cs.opponentData.move == "rock") ||
+      (cs.myMove == "paper" && cs.opponentData.move == "paper") ||
+      (cs.myMove == "scissors" && cs.opponentData.move == "scissors")
     ) {
-      currentState.history.push("draw");
+      this.pushWinner("draw");
     }
     if (
-      (myMove == "piedra" && cpuMove == "tijera") ||
-      (myMove == "papel" && cpuMove == "piedra") ||
-      (myMove == "tijera" && cpuMove == "papel")
+      (cs.myMove == "rock" && cs.opponentData.move == "scissors") ||
+      (cs.myMove == "paper" && cs.opponentData.move == "rock") ||
+      (cs.myMove == "scissors" && cs.opponentData.move == "paper")
     ) {
-      currentState.history.push("user");
+      this.pushWinner(cs.fullname);
     }
     if (
-      (myMove == "tijera" && cpuMove == "piedra") ||
-      (myMove == "papel" && cpuMove == "tijera") ||
-      (myMove == "piedra" && cpuMove == "papel")
+      (cs.myMove == "scissors" && cs.opponentData.move == "rock") ||
+      (cs.myMove == "paper" && cs.opponentData.move == "scissors") ||
+      (cs.myMove == "rock" && cs.opponentData.move == "paper")
     ) {
-      currentState.history.push("cpu");
+      this.pushWinner(cs.opponentData.fullname);
+    }
+    if (
+      (cs.myMove == "" && cs.opponentData.move == "") ||
+      (cs.myMove == "" && cs.opponentData.move == "") ||
+      (cs.myMove == "" && cs.opponentData.move == "")
+    ) {
+      this.pushWinner("draw");
+    }
+    if (
+      (cs.myMove == "scissors" && cs.opponentData.move == "") ||
+      (cs.myMove == "paper" && cs.opponentData.move == "") ||
+      (cs.myMove == "rock" && cs.opponentData.move == "")
+    ) {
+      this.pushWinner(cs.fullname);
+    }
+    if (
+      (cs.myMove == "" && cs.opponentData.move == "rock") ||
+      (cs.myMove == "" && cs.opponentData.move == "scissors") ||
+      (cs.myMove == "" && cs.opponentData.move == "paper")
+    ) {
+      this.pushWinner(cs.opponentData.fullname);
     }
 
-    this.setState(currentState);
+    this.setState(cs);
   },
-  getUserWins() {
-    const currentState = this.getState();
+  pushWinner(winner: string) {
+    const cs = this.getState();
 
-    const filterUserWins = currentState.history.filter((i) => {
-      return i == "user";
+    fetch(API_BASE_URL + "/history", {
+      method: "post",
+      headers: {
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        rtdbRoomId: cs.rtdbRoomId,
+        result: winner,
+      }),
+    }).then((w) => {
+      console.log("winner: ", w);
     });
-    return filterUserWins.length;
-  },
-  getCPUWins() {
-    const currentState = this.getState();
 
-    const filterUserWins = currentState.history.filter((i) => {
-      return i == "cpu";
+    this.setState(cs);
+  },
+  getMyWins() {
+    const cs = this.getState();
+
+    const filterUserWins = cs.history.filter((i) => {
+      return i.result == cs.fullname;
     });
-    return filterUserWins.length;
+    return filterUserWins.length / 2;
+  },
+  getOpponentWins() {
+    const cs = this.getState();
+
+    const filterUserWins = cs.history.filter((i) => {
+      return i.result == cs.opponentData.fullname;
+    });
+    return filterUserWins.length / 2;
   },
 };

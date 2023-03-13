@@ -1,3 +1,4 @@
+import { Router } from "@vaadin/router";
 import { state } from "../state";
 
 customElements.define(
@@ -11,20 +12,49 @@ customElements.define(
         this.render();
       });
 
-      setTimeout(function () {
-        state.setRTDBdata(true);
-        state.listenToRoom();
-      }, 3000);
+      const cs = state.getState();
+
+      setInterval(() => {
+        if (!cs.rtdbRoomId || !cs.userId) {
+          null;
+        } else if (!cs.rtdbRoomId || !cs.userId || !cs.opponentData) {
+          state.setOnline(true);
+          state.setRTDBdata();
+          state.listenToRoom();
+        } else {
+          console.log("listenToRoom");
+          state.listenToRoom();
+        }
+      }, 1000);
+
+      setInterval(() => {
+        if (!cs.opponentData) {
+          console.log("share 1er if");
+          null;
+        } else if (
+          cs.opponentData.online == true &&
+          cs.opponentData.start == "" &&
+          cs.start == "" &&
+          location.pathname == "/share-code"
+        ) {
+          console.log("share 2do if");
+          Router.go("/start");
+        }
+      }, 1000);
 
       window.addEventListener("beforeunload", function (event) {
-        state.setRTDBdata(false);
+        state.setOnline(false);
       });
 
       this.render();
     }
     render() {
+      const cs = state.getState();
+
       this.innerHTML = `
-              <score-comp></score-comp>
+              <score-comp player1-name='${cs.fullname}' player2-name='${
+        cs.opponentData ? cs.opponentData.fullname : ""
+      }'></score-comp>
               <room-id-comp room-id=${
                 this.roomId ? this.roomId : ""
               }></room-id-comp>

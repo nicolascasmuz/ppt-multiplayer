@@ -1,16 +1,21 @@
+import { Router } from "@vaadin/router";
+import { state } from "../state";
+
 customElements.define(
   "countdown-page",
   class extends HTMLElement {
-    shadow: ShadowRoot;
-    constructor() {
-      super();
-      this.shadow = this.attachShadow({ mode: "open" });
+    connectedCallback() {
+      setTimeout(() => {
+        state.setRTDBdata();
+        Router.go("/moves");
+      }, 3000);
+
       this.render();
     }
     render() {
-      this.shadow.innerHTML = `
+      this.innerHTML = `
         <countdown-comp></countdown-comp>
-        <hands-comp></hands-comp>
+        <rock-paper-scissors-comp></rock-paper-scissors-comp>
       `;
 
       const style = document.createElement("style");
@@ -24,7 +29,7 @@ customElements.define(
         }
         `;
 
-      this.shadow.appendChild(style);
+      this.appendChild(style);
     }
   }
 );

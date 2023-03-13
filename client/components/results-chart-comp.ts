@@ -1,19 +1,23 @@
+import { state } from "../state";
+
 customElements.define(
   "results-chart-comp",
   class extends HTMLElement {
     shadow: ShadowRoot;
     title: string;
     myResult: string;
-    cpuResult: string;
+    opponentResult: string;
     constructor() {
       super();
       this.shadow = this.attachShadow({ mode: "open" });
       this.render();
     }
     render() {
+      const cs = state.getState();
+
       this.title = this.getAttribute("title") || "";
       this.myResult = this.getAttribute("my-result") || "";
-      this.cpuResult = this.getAttribute("cpu-result") || "";
+      this.opponentResult = this.getAttribute("opponent-result") || "";
 
       const div = document.createElement("div");
       div.classList.add("result-chart__div");
@@ -21,7 +25,7 @@ customElements.define(
             <h3 class="result-chart__h3">${this.title}</h3>
             <ol class="result-chart__ol">
               <li class="result-chart__my-result">Vos: ${this.myResult}</li>
-              <li class="result-chart__cpu-result">Máquina: ${this.cpuResult}</li>
+              <li class="result-chart__cpu-result">${cs.opponentData.fullname}: ${this.opponentResult}</li>
             </ol>
           `;
 
