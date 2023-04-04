@@ -106,9 +106,9 @@ app.post("/rtdb-data", (req, res) => {
   const { start } = req.body;
   const { move } = req.body;
 
-  const roomMessagesRef = rtdb.ref(`rooms/${rtdbRoomId}/currentGame/${userId}`);
+  const userDataRef = rtdb.ref(`rooms/${rtdbRoomId}/currentGame/${userId}`);
 
-  roomMessagesRef
+  userDataRef
     .set({
       fullname: fullname,
       start: start,
@@ -143,9 +143,9 @@ app.post("/history", (req, res) => {
   const { rtdbRoomId } = req.body;
   const { result } = req.body;
 
-  const roomMessagesRef = rtdb.ref(`rooms/${rtdbRoomId}/history`);
+  const historyRef = rtdb.ref(`rooms/${rtdbRoomId}/history`);
 
-  roomMessagesRef.push({ result: result }).then((r) => res.json(r));
+  historyRef.push({ result: result }).then((r) => res.json(r));
 });
 
 app.delete("/deleteroom", (req, res) => {
