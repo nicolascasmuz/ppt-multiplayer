@@ -177,9 +177,10 @@ export const state = {
       console.log("cs.playersInRoom: ", cs.playersInRoom);
 
       this.setState(cs);
+      /* callback(); */
     });
   },
-  async checkPlayersInRooms(playerName?) {
+  async checkPlayersInRooms(playerName) {
     const cs = this.getState();
 
     if (cs.playersInRoom != "") {

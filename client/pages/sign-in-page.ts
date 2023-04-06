@@ -33,13 +33,45 @@ customElements.define(
                   Router.go("/error");
                 }
               });
-            } else if (cs.foundPlayer == false) {
+            } else if (cs.fullRoom == false) {
+              console.log("checkFullRoom 3");
               state.signIn();
               Router.go("/share-code");
             }
           });
         }
       });
+
+      /* signInFormEl.addEventListener("submit", (e: any) => {
+        e.preventDefault();
+        const nameValue = e.target["nombre"].value;
+        state.setFullname(nameValue);
+        if (cs.existingRoom == "") {
+          state.signIn(() => {
+            state.askNewRoom();
+          });
+          Router.go("/share-code");
+        } else if (cs.existingRoom == true) {
+          state
+            .checkFullRoom(() => {
+              state.checkPlayersInRooms(nameValue);
+            })
+            .then(() => {
+              if (cs.fullRoom == true && cs.foundPlayer == true) {
+                console.log("checkFullRoom 1");
+                state.signIn();
+                Router.go("/share-code");
+              } else if (cs.fullRoom == true && cs.foundPlayer == false) {
+                console.log("checkFullRoom 2");
+                Router.go("/error");
+              } else if (cs.fullRoom == false) {
+                console.log("checkFullRoom 3");
+                state.signIn();
+                Router.go("/share-code");
+              }
+            });
+        }
+      }); */
     }
     render() {
       this.innerHTML = `
