@@ -20,9 +20,24 @@ customElements.define(
             state.askNewRoom();
           });
           Router.go("/share-code");
-        } else {
-          state.signIn();
-          Router.go("/share-code");
+        } else if (cs.existingRoom == true) {
+          state.checkFullRoom().then(() => {
+            if (cs.fullRoom == true) {
+              state.checkPlayersInRooms(nameValue).then(() => {
+                if (cs.foundPlayer == true) {
+                  console.log("checkFullRoom 1");
+                  state.signIn();
+                  Router.go("/share-code");
+                } else if (cs.foundPlayer == false) {
+                  console.log("checkFullRoom 2");
+                  Router.go("/error");
+                }
+              });
+            } else if (cs.foundPlayer == false) {
+              state.signIn();
+              Router.go("/share-code");
+            }
+          });
         }
       });
     }

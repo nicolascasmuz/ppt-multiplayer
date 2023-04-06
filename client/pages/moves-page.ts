@@ -98,7 +98,7 @@ customElements.define(
         console.log("entró en este if");
         this.innerHTML = `
           <div class="moves-comp__div">
-            <h1 class="top-?">¿</h1>
+            <h1 class="top-no-move">?</h1>
             <h1 class="bottom-no-move">?</h1>
           </div>
         `;
@@ -106,7 +106,7 @@ customElements.define(
       if (cg.opponentMove == "" && cg.myMove == "rock") {
         this.innerHTML = `
           <div class="moves-comp__div">
-            <h1 class="top-no-move">¿</h1>
+            <h1 class="top-no-move">?</h1>
             <img class="bottom-hand" src=${piedraImg}></img>
           </div>
         `;
@@ -114,7 +114,7 @@ customElements.define(
       if (cg.opponentMove == "" && cg.myMove == "paper") {
         this.innerHTML = `
           <div class="moves-comp__div">
-            <h1 class="top-no-move">¿</h1>
+            <h1 class="top-no-move">?</h1>
             <img class="bottom-hand" src=${papelImg}></img>
           </div>
         `;
@@ -122,7 +122,7 @@ customElements.define(
       if (cg.opponentMove == "" && cg.myMove == "scissors") {
         this.innerHTML = `
           <div class="moves-comp__div">
-            <h1 class="top-no-move">¿</h1>
+            <h1 class="top-no-move">?</h1>
             <img class="bottom-hand" src=${tijeraImg}></img>
           </div>
         `;

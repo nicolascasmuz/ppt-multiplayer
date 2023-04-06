@@ -42,10 +42,6 @@ customElements.define(
         }
       }, 1000);
 
-      window.addEventListener("beforeunload", function (event) {
-        state.setOnline(false);
-      });
-
       this.render();
     }
     render() {

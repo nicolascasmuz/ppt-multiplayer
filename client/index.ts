@@ -26,4 +26,9 @@ import { state } from "./state";
 
 (function () {
   state.init();
+
+  /* window.addEventListener("beforeunload", function (event) {
+    event.preventDefault();
+    state.setOnline(false);
+  }); */
 })();

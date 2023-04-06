@@ -15,22 +15,21 @@ customElements.define(
     connectedCallback() {
       setTimeout(() => {
         this.render();
-        state.setStart(false);
-        state.setMove("");
-        state.setRTDBdata();
 
         const ReturnButtonEl = this.querySelector(
           ".button__return"
         ) as HTMLElement;
 
         ReturnButtonEl.addEventListener("click", () => {
+          state.setStart(false);
+          state.setMove("");
+          state.setRTDBdata();
           Router.go("/start");
         });
-      }, 2000);
-
-      this.render();
+      }, 1000);
     }
     render() {
+      const cs = state.getState();
       const cg = state.getMoves();
 
       if (

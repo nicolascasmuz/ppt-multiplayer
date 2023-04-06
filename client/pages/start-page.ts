@@ -8,6 +8,7 @@ customElements.define(
       this.render();
 
       const cs = state.getState();
+      state.listenToRoom();
 
       const startButtonEl = this.querySelector(".button__start") as HTMLElement;
 

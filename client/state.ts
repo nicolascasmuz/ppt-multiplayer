@@ -4,7 +4,6 @@ import { map } from "lodash";
 const API_BASE_URL = "http://localhost:3000";
 
 /* const api: any = { url: "" };
-
 if (process.env.ENV == "development") {
   api.url = "http://localhost:3000";
 } else if (process.env.ENV == "production") {
@@ -20,6 +19,9 @@ export const state = {
     roomId: "",
     rtdbRoomId: "",
     existingRoom: "",
+    fullRoom: "",
+    playersInRoom: "",
+    foundPlayer: "",
     start: "",
     online: "",
     myMove: "",
@@ -34,6 +36,9 @@ export const state = {
       roomId: "",
       rtdbRoomId: "",
       existingRoom: "",
+      fullRoom: "",
+      playersInRoom: "",
+      foundPlayer: "",
       start: "",
       online: "",
       myMove: "",
@@ -147,6 +152,50 @@ export const state = {
         }
       });
   },
+  async checkFullRoom(callback?) {
+    const cs = this.getState();
+
+    const roomsRef = rtdb.ref("/rooms/" + cs.rtdbRoomId + "/currentGame/");
+    await roomsRef.on("value", (snapshot) => {
+      const dataFromServer = snapshot.val();
+      const dataArray = [dataFromServer];
+
+      const makeNewArray = Object.entries(dataArray[0]);
+
+      if (makeNewArray.length == 0) {
+        cs.fullRoom = false;
+      } else if (makeNewArray.length == 1) {
+        cs.fullRoom = false;
+      } else if (makeNewArray.length == 2) {
+        cs.fullRoom = true;
+
+        const player1: any = makeNewArray[0][1];
+        const player2: any = makeNewArray[1][1];
+
+        cs.playersInRoom = [player1.fullname, player2.fullname];
+      }
+      console.log("cs.playersInRoom: ", cs.playersInRoom);
+
+      this.setState(cs);
+    });
+  },
+  async checkPlayersInRooms(playerName?) {
+    const cs = this.getState();
+
+    if (cs.playersInRoom != "") {
+      const findPlayer = cs.playersInRoom.find((p) => {
+        return p == playerName;
+      });
+      if (findPlayer) {
+        cs.foundPlayer = true;
+      } else {
+        cs.foundPlayer = false;
+      }
+    }
+    console.log("cs.foundPlayer: ", cs.foundPlayer);
+
+    await this.setState(cs);
+  },
   async setRTDBdata(state?: Boolean) {
     const cs = this.getState();
 
@@ -224,10 +273,8 @@ export const state = {
   setMove(Move: Move) {
     const cs = this.getState();
 
-    // OBTIENE LA JUGADA DEL USUARIO
     cs.myMove = Move;
 
-    // SETEA EL STATE
     this.setState(cs);
   },
   getWinner() {
