@@ -16,20 +16,23 @@ customElements.define(
       setTimeout(() => {
         this.render();
 
-        const ReturnButtonEl = this.querySelector(
+        const returnButtonEl = this.querySelector(
           ".button__return"
         ) as HTMLElement;
 
-        ReturnButtonEl.addEventListener("click", () => {
-          state.setStart(false);
+        returnButtonEl.addEventListener("click", () => {
           state.setMove("");
           state.setRTDBdata();
           Router.go("/start");
         });
       }, 1000);
+
+      state.setStart(false);
+      state.setRTDBdata();
+
+      this.render();
     }
     render() {
-      const cs = state.getState();
       const cg = state.getMoves();
 
       if (
@@ -72,9 +75,9 @@ customElements.define(
         `;
       }
       if (
-        (cg.opponentMove == "" && cg.myMove == "") ||
-        (cg.opponentMove == "" && cg.myMove == "") ||
-        (cg.opponentMove == "" && cg.myMove == "")
+        (cg.opponentMove == "no-move" && cg.myMove == "no-move") ||
+        (cg.opponentMove == "no-move" && cg.myMove == "no-move") ||
+        (cg.opponentMove == "no-move" && cg.myMove == "no-move")
       ) {
         this.innerHTML = `
             <div class="result-page-draw__screen">
@@ -85,9 +88,9 @@ customElements.define(
         `;
       }
       if (
-        (cg.opponentMove == "rock" && cg.myMove == "") ||
-        (cg.opponentMove == "paper" && cg.myMove == "") ||
-        (cg.opponentMove == "scissors" && cg.myMove == "")
+        (cg.opponentMove == "rock" && cg.myMove == "no-move") ||
+        (cg.opponentMove == "paper" && cg.myMove == "no-move") ||
+        (cg.opponentMove == "scissors" && cg.myMove == "no-move")
       ) {
         this.innerHTML = `
             <div class="result-page-cpu-wins__screen">
@@ -98,9 +101,9 @@ customElements.define(
         `;
       }
       if (
-        (cg.opponentMove == "" && cg.myMove == "rock") ||
-        (cg.opponentMove == "" && cg.myMove == "scissors") ||
-        (cg.opponentMove == "" && cg.myMove == "paper")
+        (cg.opponentMove == "no-move" && cg.myMove == "rock") ||
+        (cg.opponentMove == "no-move" && cg.myMove == "scissors") ||
+        (cg.opponentMove == "no-move" && cg.myMove == "paper")
       ) {
         this.innerHTML = `
             <div class="result-page-user-wins__screen">
@@ -156,6 +159,5 @@ customElements.define(
 
       this.appendChild(style);
     }
-    addListeners() {}
   }
 );

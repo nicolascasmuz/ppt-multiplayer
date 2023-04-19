@@ -1,10 +1,10 @@
-import { Router } from "@vaadin/router";
 import { state } from "../state";
 
 customElements.define(
   "share-code-page",
   class extends HTMLElement {
     roomId: string;
+    opponentName: string;
     connectedCallback() {
       state.subscribe(() => {
         const currentState = state.getState();
@@ -13,34 +13,24 @@ customElements.define(
       });
 
       const cs = state.getState();
+      this.roomId = cs.roomId;
 
-      setInterval(() => {
-        if (!cs.rtdbRoomId || !cs.userId) {
-          null;
-        } else if (!cs.rtdbRoomId || !cs.userId || !cs.opponentData) {
-          state.setOnline(true);
-          state.setRTDBdata();
-          state.listenToRoom();
-        } else {
-          console.log("listenToRoom");
-          state.listenToRoom();
-        }
-      }, 1000);
+      var getEntries = Object.entries(cs.rtdbData);
 
-      setInterval(() => {
-        if (!cs.opponentData) {
-          console.log("share 1er if");
-          null;
-        } else if (
-          cs.opponentData.online == true &&
-          cs.opponentData.start == "" &&
-          cs.start == "" &&
-          location.pathname == "/share-code"
-        ) {
-          console.log("share 2do if");
-          Router.go("/start");
-        }
-      }, 1000);
+      if (getEntries[1]) {
+        var idArray = [getEntries[0][0], getEntries[1][0]];
+
+        const oppId: any = idArray.find((id) => {
+          return cs.userId != id;
+        });
+
+        this.opponentName = cs.rtdbData[oppId].fullname;
+        state.setOpponentId(oppId);
+      } else {
+        this.opponentName = "";
+      }
+
+      state.listenResults();
 
       this.render();
     }
@@ -49,8 +39,8 @@ customElements.define(
 
       this.innerHTML = `
               <score-comp player1-name='${cs.fullname}' player2-name='${
-        cs.opponentData ? cs.opponentData.fullname : ""
-      }'></score-comp>
+        this.opponentName ? this.opponentName : ""
+      }' score1-name='${state.getMyWins()}' score2-name='${state.getOpponentWins()}'></score-comp>
               <room-id-comp room-id=${
                 this.roomId ? this.roomId : ""
               }></room-id-comp>

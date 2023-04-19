@@ -94,8 +94,7 @@ customElements.define(
           </div>
         `;
       }
-      if (cg.opponentMove == "" && cg.myMove == "") {
-        console.log("entró en este if");
+      if (cg.opponentMove == "no-move" && cg.myMove == "no-move") {
         this.innerHTML = `
           <div class="moves-comp__div">
             <h1 class="top-no-move">?</h1>
@@ -103,7 +102,7 @@ customElements.define(
           </div>
         `;
       }
-      if (cg.opponentMove == "" && cg.myMove == "rock") {
+      if (cg.opponentMove == "no-move" && cg.myMove == "rock") {
         this.innerHTML = `
           <div class="moves-comp__div">
             <h1 class="top-no-move">?</h1>
@@ -111,7 +110,7 @@ customElements.define(
           </div>
         `;
       }
-      if (cg.opponentMove == "" && cg.myMove == "paper") {
+      if (cg.opponentMove == "no-move" && cg.myMove == "paper") {
         this.innerHTML = `
           <div class="moves-comp__div">
             <h1 class="top-no-move">?</h1>
@@ -119,7 +118,7 @@ customElements.define(
           </div>
         `;
       }
-      if (cg.opponentMove == "" && cg.myMove == "scissors") {
+      if (cg.opponentMove == "no-move" && cg.myMove == "scissors") {
         this.innerHTML = `
           <div class="moves-comp__div">
             <h1 class="top-no-move">?</h1>
@@ -127,7 +126,7 @@ customElements.define(
           </div>
         `;
       }
-      if (cg.opponentMove == "rock" && cg.myMove == "") {
+      if (cg.opponentMove == "rock" && cg.myMove == "no-move") {
         this.innerHTML = `
           <div class="moves-comp__div">
             <img class="top-hand" src=${piedraImg}></img>
@@ -135,7 +134,7 @@ customElements.define(
           </div>
         `;
       }
-      if (cg.opponentMove == "paper" && cg.myMove == "") {
+      if (cg.opponentMove == "paper" && cg.myMove == "no-move") {
         this.innerHTML = `
           <div class="moves-comp__div">
             <img class="top-hand" src=${papelImg}></img>
@@ -143,7 +142,7 @@ customElements.define(
           </div>
         `;
       }
-      if (cg.opponentMove == "scissors" && cg.myMove == "") {
+      if (cg.opponentMove == "scissors" && cg.myMove == "no-move") {
         this.innerHTML = `
           <div class="moves-comp__div">
             <img class="top-hand" src=${tijeraImg}></img>

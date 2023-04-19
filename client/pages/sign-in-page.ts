@@ -11,73 +11,51 @@ customElements.define(
 
       const signInFormEl = this.querySelector(".sign-in__form") as HTMLElement;
 
-      signInFormEl.addEventListener("submit", (e: any) => {
-        e.preventDefault();
-        const nameValue = e.target["nombre"].value;
-        state.setFullname(nameValue);
-        if (cs.existingRoom == "") {
-          state.signIn(() => {
-            state.askNewRoom();
-          });
-          Router.go("/share-code");
-        } else if (cs.existingRoom == true) {
-          state.checkFullRoom().then(() => {
-            if (cs.fullRoom == true) {
-              state.checkPlayersInRooms(nameValue).then(() => {
-                if (cs.foundPlayer == true) {
-                  console.log("checkFullRoom 1");
-                  state.signIn();
-                  Router.go("/share-code");
-                } else if (cs.foundPlayer == false) {
-                  console.log("checkFullRoom 2");
-                  Router.go("/error");
-                }
-              });
-            } else if (cs.fullRoom == false) {
-              console.log("checkFullRoom 3");
-              state.signIn();
-              Router.go("/share-code");
-            }
-          });
-        }
-      });
+      if (cs.rtdbRoomId) {
+        signInFormEl.addEventListener("submit", async (e: any) => {
+          e.preventDefault();
 
-      /* signInFormEl.addEventListener("submit", (e: any) => {
-        e.preventDefault();
-        const nameValue = e.target["nombre"].value;
-        state.setFullname(nameValue);
-        if (cs.existingRoom == "") {
-          state.signIn(() => {
-            state.askNewRoom();
-          });
-          Router.go("/share-code");
-        } else if (cs.existingRoom == true) {
-          state
-            .checkFullRoom(() => {
-              state.checkPlayersInRooms(nameValue);
-            })
-            .then(() => {
-              if (cs.fullRoom == true && cs.foundPlayer == true) {
-                console.log("checkFullRoom 1");
-                state.signIn();
-                Router.go("/share-code");
-              } else if (cs.fullRoom == true && cs.foundPlayer == false) {
-                console.log("checkFullRoom 2");
+          const nameValue = e.target["name"].value;
+
+          state.setFullname(nameValue);
+          state.setOnline(true);
+          state.setMove("");
+
+          await state.signIn(() => {
+            state
+              .setRTDBdata()
+              .then(() => {
+                state.listenToRoom();
+              })
+              .catch(() => {
                 Router.go("/error");
-              } else if (cs.fullRoom == false) {
-                console.log("checkFullRoom 3");
-                state.signIn();
-                Router.go("/share-code");
-              }
+              });
+          });
+        });
+      } else {
+        signInFormEl.addEventListener("submit", async (e: any) => {
+          e.preventDefault();
+
+          const nameValue = e.target["name"].value;
+
+          state.setFullname(nameValue);
+          state.setOnline(true);
+
+          await state.signIn(() => {
+            state.askNewRoom(() => {
+              state.setRTDBdata().then(() => {
+                state.listenToRoom();
+              });
             });
-        }
-      }); */
+          });
+        });
+      }
     }
     render() {
       this.innerHTML = `
           <main-title-comp title="Piedra Papel o Tijera"></main-title-comp>
           <form class="sign-in__form">
-            <text-field-comp type="text" name="nombre" placeholder="'tu nombre'"></text-field-comp>
+            <text-field-comp type="text" name="name" placeholder="'tu nombre'"></text-field-comp>
             <button-comp class="button__ingresar-sala">Empezar</button-comp>
           </form>
           <hands-comp></hands-comp>

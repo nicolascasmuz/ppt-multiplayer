@@ -1,5 +1,4 @@
 import { Router } from "@vaadin/router";
-import { state } from "../state";
 
 customElements.define(
   "main-page",
@@ -48,13 +47,12 @@ customElements.define(
       const newGameButtonEl = this.shadow.querySelector(
         ".button__nuevo-juego"
       ) as HTMLElement;
-
       const enterRoomButtonEl = this.shadow.querySelector(
         ".button__ingresar-sala"
       ) as HTMLElement;
 
       newGameButtonEl.addEventListener("click", () => {
-        Router.go("sign-in");
+        Router.go("/sign-in");
       });
       enterRoomButtonEl.addEventListener("click", () => {
         Router.go("/enter-room");

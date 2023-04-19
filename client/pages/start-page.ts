@@ -1,21 +1,42 @@
-import { Router } from "@vaadin/router";
 import { state } from "../state";
 
 customElements.define(
   "start-page",
   class extends HTMLElement {
+    opponentName: string;
     connectedCallback() {
       this.render();
 
       const cs = state.getState();
-      state.listenToRoom();
+
+      var getEntries = Object.entries(cs.rtdbData);
+
+      if (getEntries[1]) {
+        var idArray = [getEntries[0][0], getEntries[1][0]];
+
+        const oppId: any = idArray.find((id) => {
+          return cs.userId != id;
+        });
+
+        this.opponentName = cs.rtdbData[oppId].fullname;
+        state.setOpponentId(oppId);
+
+        state.listenResults();
+
+        this.render();
+      } else {
+        this.opponentName = "";
+
+        state.listenResults();
+
+        this.render();
+      }
 
       const startButtonEl = this.querySelector(".button__start") as HTMLElement;
 
       startButtonEl.addEventListener("click", () => {
         state.setStart(true);
         state.setRTDBdata();
-        Router.go("/waiting");
       });
     }
     render() {
@@ -23,8 +44,8 @@ customElements.define(
 
       this.innerHTML = `
                 <score-comp player1-name='${cs.fullname}' player2-name='${
-        cs.opponentData ? cs.opponentData.fullname : ""
-      }'></score-comp>
+        this.opponentName ? this.opponentName : ""
+      }' score1-name='${state.getMyWins()}' score2-name='${state.getOpponentWins()}'></score-comp>
                 <room-id-comp room-id=${
                   cs.roomId ? cs.roomId : ""
                 }></room-id-comp>

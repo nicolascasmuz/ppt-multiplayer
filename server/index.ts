@@ -50,12 +50,11 @@ app.post("/rooms", (req, res) => {
         const roomRef = rtdb.ref("rooms/" + nanoid());
         roomRef
           .set({
-            messages: [],
             owner: userId,
           })
           .then(() => {
             const fullRoomId = roomRef.key;
-            const roomId = fullRoomId.slice(16);
+            const roomId = fullRoomId.slice(16).toUpperCase();
             roomsCollection
               .doc(roomId.toString())
               .set({ rtdbRoomId: fullRoomId })
@@ -74,17 +73,39 @@ app.post("/rooms", (req, res) => {
     });
 });
 
-app.get("/rooms/:roomId", (req, res) => {
+app.get("/room/:roomId", async function (req, res) {
   const { roomId } = req.params;
 
-  roomsCollection
-    .doc(roomId)
-    .get()
-    .then((snap) => {
-      const data = snap.data();
-      res.json(data);
-    });
+  const roomDoc = await roomsCollection.doc(roomId.toString()).get();
+
+  if (!roomDoc.exists) {
+    res.status(404).json({ error: "Room not found" });
+  } else {
+    const roomData = roomDoc.data();
+
+    res.status(200).json({ rtdbRoomId: roomData?.rtdbRoomId });
+  }
 });
+
+/* app.post("/rtdb/room/:rtdbRoomId", async function (req, res) {
+  const { rtdbRoomId } = req.params;
+  const { fullname } = req.query;
+
+  const roomRef = rtdb.ref(`rooms/${rtdbRoomId}/currentGame/${fullname}`);
+
+  const snapshot = await roomRef.once("value");
+
+  const numChildren = snapshot.numChildren();
+  const data = snapshot.val();
+
+  if (numChildren < 2 || data[fullname as string]) {
+    roomRef.child(fullname as string).set(req.body);
+
+    res.json({ message: "Player data added or updated" });
+  } else {
+    res.status(403).json({ error: "Room is full" });
+  }
+}); */
 
 app.get("/room/:roomId", (req, res) => {
   const { roomId } = req.params;
@@ -98,7 +119,7 @@ app.get("/room/:roomId", (req, res) => {
     });
 });
 
-app.post("/rtdb-data", (req, res) => {
+app.post("/rtdb-data", async (req, res) => {
   const { rtdbRoomId } = req.body;
   const { userId } = req.body;
   const { fullname } = req.body;
@@ -106,7 +127,7 @@ app.post("/rtdb-data", (req, res) => {
   const { start } = req.body;
   const { move } = req.body;
 
-  const userDataRef = rtdb.ref(`rooms/${rtdbRoomId}/currentGame/${userId}`);
+  /* const userDataRef = rtdb.ref(`rooms/${rtdbRoomId}/currentGame/${userId}`);
 
   userDataRef
     .set({
@@ -115,7 +136,27 @@ app.post("/rtdb-data", (req, res) => {
       online: online,
       move: move,
     })
-    .then((r) => res.json(r));
+    .then((r) => res.json(r)); */
+
+  const userDataRef = rtdb.ref(`rooms/${rtdbRoomId}/currentGame`);
+
+  const snapshot = await userDataRef.once("value");
+
+  const numChildren = snapshot.numChildren();
+  const data = snapshot.val();
+
+  if (numChildren < 2 || data[userId as string]) {
+    userDataRef.child(userId as string).set({
+      fullname: fullname,
+      start: start,
+      online: online,
+      move: move,
+    });
+
+    res.json({ message: "Player data added or updated" });
+  } else {
+    res.status(403).json({ error: "Room is full" });
+  }
 });
 
 app.delete("/remove-player", (req, res) => {

@@ -14,6 +14,7 @@ customElements.define(
     }
     render() {
       const cs = state.getState();
+      const opponentName = cs.rtdbData[cs.opponentId].fullname;
 
       this.title = this.getAttribute("title") || "";
       this.myResult = this.getAttribute("my-result") || "";
@@ -25,7 +26,7 @@ customElements.define(
             <h3 class="result-chart__h3">${this.title}</h3>
             <ol class="result-chart__ol">
               <li class="result-chart__my-result">Vos: ${this.myResult}</li>
-              <li class="result-chart__cpu-result">${cs.opponentData.fullname}: ${this.opponentResult}</li>
+              <li class="result-chart__cpu-result">${opponentName}: ${this.opponentResult}</li>
             </ol>
           `;
 

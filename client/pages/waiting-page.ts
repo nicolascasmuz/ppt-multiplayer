@@ -1,23 +1,14 @@
-import { Router } from "@vaadin/router";
 import { state } from "../state";
 
 customElements.define(
   "waiting-page",
   class extends HTMLElement {
+    opponentName: string;
     connectedCallback() {
       const cs = state.getState();
+      this.opponentName = cs.rtdbData[cs.opponentId].fullname || "";
 
-      const interval = setInterval(() => {
-        if (cs.opponentData.start == "") {
-          console.log("waiting 1er if");
-        } else if (cs.opponentData.move != "" || cs.myMove != "") {
-          console.log("waiting 2do if");
-          clearInterval(interval);
-        } else if (cs.opponentData.start == true) {
-          console.log("waiting 3er if");
-          Router.go("/countdown");
-        }
-      }, 1000);
+      state.listenResults();
 
       this.render();
     }
@@ -26,13 +17,13 @@ customElements.define(
 
       this.innerHTML = `
               <score-comp player1-name='${cs.fullname}' player2-name='${
-        cs.opponentData ? cs.opponentData.fullname : ""
-      }'></score-comp>
+        this.opponentName ? this.opponentName : ""
+      }' score1-name='${state.getMyWins()}' score2-name='${state.getOpponentWins()}'></score-comp>
               <room-id-comp room-id=${
                 cs.roomId ? cs.roomId : ""
               }></room-id-comp>
               <p class="text-waiting">Esperando a que <span class="text-opponent">${
-                cs.opponentData ? cs.opponentData.fullname : ""
+                this.opponentName ? this.opponentName : ""
               }</span> presione ¡Jugar! ...</p>
               <hands-comp></hands-comp>
             `;

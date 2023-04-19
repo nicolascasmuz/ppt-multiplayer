@@ -1,13 +1,11 @@
 customElements.define(
   "text-field-comp",
   class extends HTMLElement {
-    /* shadow: ShadowRoot; */
     type: string;
     name: string;
     placeholder: string;
     constructor() {
       super();
-      /* this.shadow = this.attachShadow({ mode: "open" }); */
       this.render();
     }
     render() {
@@ -17,7 +15,8 @@ customElements.define(
 
       this.innerHTML = `
         <input class="input" type=${this.type} name=${this.name} placeholder=${this.placeholder}>
-      `;
+        <p class="no-room">La sala no existe, pruebe con otro código</p>
+        `;
 
       const style = document.createElement("style");
       style.innerHTML = `
@@ -33,10 +32,14 @@ customElements.define(
             height: 87px;
             margin: 0;
         }
+        .no-room {
+            display: none;
+            color: #EA2027;
+            font-family: cursive;
+            margin: 0;
+        }
       `;
 
-      /* this.shadow.appendChild(input); */
-      /* this.shadow.appendChild(style); */
       this.appendChild(style);
     }
   }

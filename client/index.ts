@@ -23,12 +23,15 @@ import "./pages/results-page";
 import "./router";
 
 import { state } from "./state";
+import { stat } from "fs";
 
 (function () {
-  state.init();
-
-  /* window.addEventListener("beforeunload", function (event) {
+  window.addEventListener("beforeunload", function (event) {
     event.preventDefault();
     state.setOnline(false);
-  }); */
+    state.setMove("");
+    state.setRTDBdata();
+  });
+
+  state.init();
 })();

@@ -1,5 +1,7 @@
+import { onValue, ref } from "firebase/database";
 import { rtdb } from "./rtdb";
 import { map } from "lodash";
+import { Router } from "@vaadin/router";
 
 const API_BASE_URL = "http://localhost:3000";
 
@@ -10,7 +12,7 @@ if (process.env.ENV == "development") {
   api.url = process.env.BACKEND_URL;
 } */
 
-type Move = "rock" | "paper" | "scissors" | "";
+type Move = "rock" | "paper" | "scissors" | "no-move" | "";
 
 export const state = {
   data: {
@@ -25,7 +27,8 @@ export const state = {
     start: "",
     online: "",
     myMove: "",
-    opponentData: "",
+    rtdbData: "",
+    opponentId: "",
     history: [],
   },
   listeners: [],
@@ -42,7 +45,8 @@ export const state = {
       start: "",
       online: "",
       myMove: "",
-      opponentData: "",
+      rtdbData: "",
+      opponentId: "",
       history: [],
     };
 
@@ -72,6 +76,18 @@ export const state = {
   setFullname(fullname: string) {
     const cs = this.getState();
     cs.fullname = fullname;
+
+    this.setState(cs);
+  },
+  setRoomId(roomId: string) {
+    const cs = this.getState();
+    cs.roomId = roomId;
+
+    this.setState(cs);
+  },
+  setOpponentId(opponentId) {
+    const cs = this.getState();
+    cs.opponentId = opponentId;
 
     this.setState(cs);
   },
@@ -108,28 +124,6 @@ export const state = {
         }
       });
   },
-  async getExistingRoom(inputRoomid) {
-    const cs = this.getState();
-
-    await fetch(API_BASE_URL + "/room/" + inputRoomid).then((r) => {
-      const contentLength = Number(r.headers.get("content-length"));
-      if (contentLength != 0) {
-        cs.roomId = inputRoomid;
-        cs.existingRoom = true;
-        fetch(API_BASE_URL + "/rooms/" + inputRoomid)
-          .then((res) => {
-            return res.json();
-          })
-          .then((data) => {
-            cs.rtdbRoomId = data.rtdbRoomId;
-            this.setState(cs);
-          });
-      } else if (contentLength == 0) {
-        cs.existingRoom = false;
-      }
-      this.setState(cs);
-    });
-  },
   async askNewRoom(callback?) {
     const cs = this.getState();
 
@@ -152,7 +146,57 @@ export const state = {
         }
       });
   },
-  async checkFullRoom(callback?) {
+  async joinRoom() {
+    const cs = this.getState();
+
+    const response = await fetch(
+      API_BASE_URL +
+        "/rtdb/room/" +
+        cs.rtdbRoomId +
+        "/?fullname=" +
+        cs.fullname,
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        method: "post",
+        body: JSON.stringify({
+          move: "",
+          online: true,
+          start: false,
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error();
+    }
+
+    await response.json();
+  },
+  async getExistingRoom() {
+    const cs = this.getState();
+
+    const roomId = cs.roomId;
+
+    const response = await fetch(API_BASE_URL + "/room/" + roomId, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: "get",
+    });
+
+    if (!response.ok) {
+      throw new Error();
+    }
+
+    const data = await response.json();
+
+    cs.rtdbRoomId = data.rtdbRoomId;
+
+    this.setState(cs);
+  },
+  /* async checkFullRoom(callback?) {
     const cs = this.getState();
 
     const roomsRef = rtdb.ref("/rooms/" + cs.rtdbRoomId + "/currentGame/");
@@ -177,9 +221,8 @@ export const state = {
       console.log("cs.playersInRoom: ", cs.playersInRoom);
 
       this.setState(cs);
-      /* callback(); */
     });
-  },
+  }, */
   async checkPlayersInRooms(playerName) {
     const cs = this.getState();
 
@@ -197,10 +240,10 @@ export const state = {
 
     await this.setState(cs);
   },
-  async setRTDBdata(state?: Boolean) {
+  async setRTDBdata(callback?) {
     const cs = this.getState();
 
-    await fetch(API_BASE_URL + "/rtdb-data", {
+    const response = await fetch(API_BASE_URL + "/rtdb-data", {
       method: "post",
       headers: {
         "content-type": "application/json",
@@ -215,9 +258,36 @@ export const state = {
       }),
     });
 
+    if (!response.ok) {
+      throw new Error();
+    }
+
+    await response.json();
+
+    if (callback) {
+      callback();
+    }
+
     this.setState(cs);
   },
-  listenToRoom() {
+  async listenToRoom() {
+    const cs = this.getState();
+
+    const roomsRef = ref(rtdb, "/rooms/" + cs.rtdbRoomId);
+
+    await onValue(roomsRef, (snapshot) => {
+      const cs = this.getState();
+
+      const value = snapshot.val();
+
+      cs.rtdbData = value.currentGame;
+
+      this.setState(cs);
+
+      this.checkPlayersStatus();
+    });
+  },
+  /* listenToRoom() {
     const cs = this.getState();
 
     const roomsRef = rtdb.ref("/rooms/" + cs.rtdbRoomId + "/currentGame/");
@@ -240,25 +310,27 @@ export const state = {
 
       this.setState(cs);
     });
-  },
+  },  */
   async listenResults() {
     const cs = this.getState();
 
-    const chatroomsRef = rtdb.ref("/rooms/" + cs.rtdbRoomId);
-    await chatroomsRef.on("value", (snapshot) => {
-      const currentState = this.getState();
-      const messagesFromServer = snapshot.val();
-      const messagesList = map(messagesFromServer.history);
+    const roomsRef = ref(rtdb, "/rooms/" + cs.rtdbRoomId);
+
+    await onValue(roomsRef, (snapshot) => {
+      const cs = this.getState();
+
+      const movesFromServer = snapshot.val();
+      const movesList = map(movesFromServer.history);
 
       const resultsArray: any = [];
 
-      for (const i of messagesList) {
+      for (const i of movesList) {
         resultsArray.push(i);
       }
 
-      currentState.history = resultsArray;
+      cs.history = resultsArray;
 
-      this.setState(currentState);
+      this.setState(cs);
     });
   },
   getMoves() {
@@ -266,14 +338,13 @@ export const state = {
 
     const currentGame = {
       myMove: cs.myMove,
-      opponentMove: cs.opponentData.move,
+      opponentMove: cs.rtdbData[cs.opponentId].move,
     };
 
     return currentGame;
   },
   setMove(Move: Move) {
     const cs = this.getState();
-
     cs.myMove = Move;
 
     this.setState(cs);
@@ -282,46 +353,50 @@ export const state = {
     const cs = this.getState();
 
     if (
-      (cs.myMove == "rock" && cs.opponentData.move == "rock") ||
-      (cs.myMove == "paper" && cs.opponentData.move == "paper") ||
-      (cs.myMove == "scissors" && cs.opponentData.move == "scissors")
+      (cs.myMove == "rock" && cs.rtdbData[cs.opponentId].move == "rock") ||
+      (cs.myMove == "paper" && cs.rtdbData[cs.opponentId].move == "paper") ||
+      (cs.myMove == "scissors" && cs.rtdbData[cs.opponentId].move == "scissors")
     ) {
       this.pushWinner("draw");
     }
     if (
-      (cs.myMove == "rock" && cs.opponentData.move == "scissors") ||
-      (cs.myMove == "paper" && cs.opponentData.move == "rock") ||
-      (cs.myMove == "scissors" && cs.opponentData.move == "paper")
+      (cs.myMove == "rock" && cs.rtdbData[cs.opponentId].move == "scissors") ||
+      (cs.myMove == "paper" && cs.rtdbData[cs.opponentId].move == "rock") ||
+      (cs.myMove == "scissors" && cs.rtdbData[cs.opponentId].move == "paper")
     ) {
       this.pushWinner(cs.fullname);
     }
     if (
-      (cs.myMove == "scissors" && cs.opponentData.move == "rock") ||
-      (cs.myMove == "paper" && cs.opponentData.move == "scissors") ||
-      (cs.myMove == "rock" && cs.opponentData.move == "paper")
+      (cs.myMove == "scissors" && cs.rtdbData[cs.opponentId].move == "rock") ||
+      (cs.myMove == "paper" && cs.rtdbData[cs.opponentId].move == "scissors") ||
+      (cs.myMove == "rock" && cs.rtdbData[cs.opponentId].move == "paper")
     ) {
-      this.pushWinner(cs.opponentData.fullname);
+      this.pushWinner(cs.rtdbData[cs.opponentId].fullname);
     }
     if (
-      (cs.myMove == "" && cs.opponentData.move == "") ||
-      (cs.myMove == "" && cs.opponentData.move == "") ||
-      (cs.myMove == "" && cs.opponentData.move == "")
+      (cs.myMove == "no-move" &&
+        cs.rtdbData[cs.opponentId].move == "no-move") ||
+      (cs.myMove == "no-move" &&
+        cs.rtdbData[cs.opponentId].move == "no-move") ||
+      (cs.myMove == "no-move" && cs.rtdbData[cs.opponentId].move == "no-move")
     ) {
       this.pushWinner("draw");
     }
     if (
-      (cs.myMove == "scissors" && cs.opponentData.move == "") ||
-      (cs.myMove == "paper" && cs.opponentData.move == "") ||
-      (cs.myMove == "rock" && cs.opponentData.move == "")
+      (cs.myMove == "scissors" &&
+        cs.rtdbData[cs.opponentId].move == "no-move") ||
+      (cs.myMove == "paper" && cs.rtdbData[cs.opponentId].move == "no-move") ||
+      (cs.myMove == "rock" && cs.rtdbData[cs.opponentId].move == "no-move")
     ) {
       this.pushWinner(cs.fullname);
     }
     if (
-      (cs.myMove == "" && cs.opponentData.move == "rock") ||
-      (cs.myMove == "" && cs.opponentData.move == "scissors") ||
-      (cs.myMove == "" && cs.opponentData.move == "paper")
+      (cs.myMove == "no-move" && cs.rtdbData[cs.opponentId].move == "rock") ||
+      (cs.myMove == "no-move" &&
+        cs.rtdbData[cs.opponentId].move == "scissors") ||
+      (cs.myMove == "no-move" && cs.rtdbData[cs.opponentId].move == "paper")
     ) {
-      this.pushWinner(cs.opponentData.fullname);
+      this.pushWinner(cs.rtdbData[cs.opponentId].fullname);
     }
 
     this.setState(cs);
@@ -356,8 +431,61 @@ export const state = {
     const cs = this.getState();
 
     const filterUserWins = cs.history.filter((i) => {
-      return i.result == cs.opponentData.fullname;
+      return i.result == cs.rtdbData[cs.opponentId].fullname;
     });
     return filterUserWins.length / 2;
+  },
+  checkPlayersStatus() {
+    const currentState = this.getState();
+    const currentGame = currentState.rtdbData;
+
+    const players = Object.values(currentGame) as any;
+
+    const isAllPlayersOnline = players.every((player: any) => player.online);
+    const isAllPlayersReady = players.every((player: any) => player.start);
+    const isAllPlayersMove = players.every((player: any) => player.move);
+
+    if (players.length == 2) {
+      if (!isAllPlayersOnline) {
+        console.log("checkPlayersStatus funciona 2");
+        Router.go("/share-code");
+      }
+      if (
+        isAllPlayersOnline &&
+        !isAllPlayersReady &&
+        !isAllPlayersMove &&
+        location.pathname != "/results"
+      ) {
+        console.log("checkPlayersStatus funciona 3");
+        Router.go("/start");
+      }
+      if (
+        isAllPlayersOnline &&
+        !isAllPlayersReady &&
+        currentState.start == true &&
+        location.pathname != "/results"
+      ) {
+        console.log("checkPlayersStatus funciona 4");
+        Router.go("/waiting");
+      }
+      if (isAllPlayersOnline && isAllPlayersReady && !isAllPlayersMove) {
+        console.log("checkPlayersStatus funciona 5");
+        Router.go("/countdown");
+      }
+      if (
+        isAllPlayersOnline &&
+        isAllPlayersReady &&
+        isAllPlayersMove &&
+        location.pathname != "/results"
+      ) {
+        console.log("checkPlayersStatus funciona 6");
+        Router.go("/moves");
+      }
+    }
+
+    if (players.length == 1) {
+      console.log("checkPlayersStatus funciona");
+      Router.go("/share-code");
+    }
   },
 };

@@ -7,29 +7,36 @@ customElements.define(
     connectedCallback() {
       this.render();
 
-      const cs = state.getState();
-
       const signInFormEl = this.querySelector(
         ".enter-room__form"
       ) as HTMLElement;
+      const textFieldEl = this.querySelector("text-field-comp") as HTMLElement;
+      const input = textFieldEl.querySelector(".input") as HTMLElement;
+      const noRoom = textFieldEl.querySelector(".no-room") as HTMLElement;
 
       signInFormEl.addEventListener("submit", (e: any) => {
         e.preventDefault();
-        const codeValue = e.target["codigo"].value;
-        if (codeValue != "") {
-          state.getExistingRoom(codeValue).then(() => {
-            if (cs.existingRoom == true) {
-              Router.go("/sign-in");
-            }
+        const codeValue = e.target["code"].value;
+
+        state.setRoomId(codeValue.toUpperCase());
+
+        state
+          .getExistingRoom()
+          .then(() => {
+            Router.go("/sign-in");
+          })
+          .catch(() => {
+            input.style.border = "solid 10px #EA2027";
+            input.style.backgroundColor = "#ff7979";
+            noRoom.style.display = "block";
           });
-        }
       });
     }
     render() {
       this.innerHTML = `
         <main-title-comp title="Piedra Papel o Tijera"></main-title-comp>
         <form class="enter-room__form">
-          <text-field-comp type="text" name="codigo" placeholder="'código'"></text-field-comp>
+          <text-field-comp type="text" name="code" placeholder="'código'"></text-field-comp>
           <button-comp class="button__ingresar-sala">Ingresar</button-comp>
         </form>
         <hands-comp></hands-comp>

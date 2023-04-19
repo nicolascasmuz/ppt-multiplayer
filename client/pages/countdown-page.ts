@@ -1,4 +1,3 @@
-import { Router } from "@vaadin/router";
 import { state } from "../state";
 
 customElements.define(
@@ -6,8 +5,13 @@ customElements.define(
   class extends HTMLElement {
     connectedCallback() {
       setTimeout(() => {
-        state.setRTDBdata();
-        Router.go("/moves");
+        const cg = state.getMoves();
+        if (cg.myMove == "") {
+          state.setMove("no-move");
+          state.setRTDBdata();
+        } else {
+          state.setRTDBdata();
+        }
       }, 3000);
 
       this.render();
@@ -23,7 +27,7 @@ customElements.define(
         countdown-comp {
           grid-row: 1;
         }
-        hands-comp {
+        rock-paper-scissors-comp {
           grid-row: 2;
           align-self: end;
         }
