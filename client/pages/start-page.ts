@@ -21,13 +21,13 @@ customElements.define(
         this.opponentName = cs.rtdbData[oppId].fullname;
         state.setOpponentId(oppId);
 
-        state.listenResults();
+        state.listenToResults();
 
         this.render();
       } else {
         this.opponentName = "";
 
-        state.listenResults();
+        state.listenToResults();
 
         this.render();
       }

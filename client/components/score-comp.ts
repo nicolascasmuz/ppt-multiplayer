@@ -1,5 +1,3 @@
-import { state } from "../state";
-
 customElements.define(
   "score-comp",
   class extends HTMLElement {

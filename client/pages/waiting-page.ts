@@ -8,7 +8,7 @@ customElements.define(
       const cs = state.getState();
       this.opponentName = cs.rtdbData[cs.opponentId].fullname || "";
 
-      state.listenResults();
+      state.listenToResults();
 
       this.render();
     }

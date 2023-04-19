@@ -30,7 +30,7 @@ customElements.define(
         this.opponentName = "";
       }
 
-      state.listenResults();
+      state.listenToResults();
 
       this.render();
     }

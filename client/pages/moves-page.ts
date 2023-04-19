@@ -13,7 +13,7 @@ customElements.define(
         state.getWinner();
         state.getMyWins();
         state.getOpponentWins();
-        state.listenResults();
+        state.listenToResults();
         Router.go("/results");
       }, 3000);
 

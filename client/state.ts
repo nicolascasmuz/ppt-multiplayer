@@ -20,10 +20,6 @@ export const state = {
     userId: "",
     roomId: "",
     rtdbRoomId: "",
-    existingRoom: "",
-    fullRoom: "",
-    playersInRoom: "",
-    foundPlayer: "",
     start: "",
     online: "",
     myMove: "",
@@ -38,10 +34,6 @@ export const state = {
       userId: "",
       roomId: "",
       rtdbRoomId: "",
-      existingRoom: "",
-      fullRoom: "",
-      playersInRoom: "",
-      foundPlayer: "",
       start: "",
       online: "",
       myMove: "",
@@ -146,104 +138,30 @@ export const state = {
         }
       });
   },
-  async joinRoom() {
-    const cs = this.getState();
-
-    const response = await fetch(
-      API_BASE_URL +
-        "/rtdb/room/" +
-        cs.rtdbRoomId +
-        "/?fullname=" +
-        cs.fullname,
-      {
-        headers: {
-          "Content-Type": "application/json",
-        },
-        method: "post",
-        body: JSON.stringify({
-          move: "",
-          online: true,
-          start: false,
-        }),
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error();
-    }
-
-    await response.json();
-  },
   async getExistingRoom() {
     const cs = this.getState();
 
-    const roomId = cs.roomId;
-
-    const response = await fetch(API_BASE_URL + "/room/" + roomId, {
+    const res = await fetch(API_BASE_URL + "/room/" + cs.roomId, {
+      method: "get",
       headers: {
         "Content-Type": "application/json",
       },
-      method: "get",
     });
 
-    if (!response.ok) {
+    if (!res.ok) {
       throw new Error();
     }
 
-    const data = await response.json();
+    const data = await res.json();
 
     cs.rtdbRoomId = data.rtdbRoomId;
 
     this.setState(cs);
   },
-  /* async checkFullRoom(callback?) {
-    const cs = this.getState();
-
-    const roomsRef = rtdb.ref("/rooms/" + cs.rtdbRoomId + "/currentGame/");
-    await roomsRef.on("value", (snapshot) => {
-      const dataFromServer = snapshot.val();
-      const dataArray = [dataFromServer];
-
-      const makeNewArray = Object.entries(dataArray[0]);
-
-      if (makeNewArray.length == 0) {
-        cs.fullRoom = false;
-      } else if (makeNewArray.length == 1) {
-        cs.fullRoom = false;
-      } else if (makeNewArray.length == 2) {
-        cs.fullRoom = true;
-
-        const player1: any = makeNewArray[0][1];
-        const player2: any = makeNewArray[1][1];
-
-        cs.playersInRoom = [player1.fullname, player2.fullname];
-      }
-      console.log("cs.playersInRoom: ", cs.playersInRoom);
-
-      this.setState(cs);
-    });
-  }, */
-  async checkPlayersInRooms(playerName) {
-    const cs = this.getState();
-
-    if (cs.playersInRoom != "") {
-      const findPlayer = cs.playersInRoom.find((p) => {
-        return p == playerName;
-      });
-      if (findPlayer) {
-        cs.foundPlayer = true;
-      } else {
-        cs.foundPlayer = false;
-      }
-    }
-    console.log("cs.foundPlayer: ", cs.foundPlayer);
-
-    await this.setState(cs);
-  },
   async setRTDBdata(callback?) {
     const cs = this.getState();
 
-    const response = await fetch(API_BASE_URL + "/rtdb-data", {
+    const res = await fetch(API_BASE_URL + "/rtdb-data", {
       method: "post",
       headers: {
         "content-type": "application/json",
@@ -258,11 +176,11 @@ export const state = {
       }),
     });
 
-    if (!response.ok) {
+    if (!res.ok) {
       throw new Error();
     }
 
-    await response.json();
+    await res.json();
 
     if (callback) {
       callback();
@@ -276,42 +194,15 @@ export const state = {
     const roomsRef = ref(rtdb, "/rooms/" + cs.rtdbRoomId);
 
     await onValue(roomsRef, (snapshot) => {
-      const cs = this.getState();
-
       const value = snapshot.val();
-
       cs.rtdbData = value.currentGame;
 
       this.setState(cs);
 
-      this.checkPlayersStatus();
+      this.listenToPlayersStatus();
     });
   },
-  /* listenToRoom() {
-    const cs = this.getState();
-
-    const roomsRef = rtdb.ref("/rooms/" + cs.rtdbRoomId + "/currentGame/");
-    roomsRef.on("value", (snapshot) => {
-      const dataFromServer = snapshot.val();
-      const dataArray = [dataFromServer];
-      const makeNewArray = Object.entries(dataArray[0]);
-
-      if (!makeNewArray[1]) {
-        null;
-      } else {
-        const idArray = [makeNewArray[0][0], makeNewArray[1][0]];
-
-        const filteredId = idArray.filter((id) => {
-          return id != cs.userId;
-        });
-
-        cs.opponentData = dataFromServer[filteredId[0]];
-      }
-
-      this.setState(cs);
-    });
-  },  */
-  async listenResults() {
+  async listenToResults() {
     const cs = this.getState();
 
     const roomsRef = ref(rtdb, "/rooms/" + cs.rtdbRoomId);
@@ -352,51 +243,50 @@ export const state = {
   getWinner() {
     const cs = this.getState();
 
+    const opponentMove = cs.rtdbData[cs.opponentId].move;
+    const opponentName = cs.rtdbData[cs.opponentId].fullname;
+
     if (
-      (cs.myMove == "rock" && cs.rtdbData[cs.opponentId].move == "rock") ||
-      (cs.myMove == "paper" && cs.rtdbData[cs.opponentId].move == "paper") ||
-      (cs.myMove == "scissors" && cs.rtdbData[cs.opponentId].move == "scissors")
+      (cs.myMove == "rock" && opponentMove == "rock") ||
+      (cs.myMove == "paper" && opponentMove == "paper") ||
+      (cs.myMove == "scissors" && opponentMove == "scissors")
     ) {
       this.pushWinner("draw");
     }
     if (
-      (cs.myMove == "rock" && cs.rtdbData[cs.opponentId].move == "scissors") ||
-      (cs.myMove == "paper" && cs.rtdbData[cs.opponentId].move == "rock") ||
-      (cs.myMove == "scissors" && cs.rtdbData[cs.opponentId].move == "paper")
+      (cs.myMove == "rock" && opponentMove == "scissors") ||
+      (cs.myMove == "paper" && opponentMove == "rock") ||
+      (cs.myMove == "scissors" && opponentMove == "paper")
     ) {
       this.pushWinner(cs.fullname);
     }
     if (
-      (cs.myMove == "scissors" && cs.rtdbData[cs.opponentId].move == "rock") ||
-      (cs.myMove == "paper" && cs.rtdbData[cs.opponentId].move == "scissors") ||
-      (cs.myMove == "rock" && cs.rtdbData[cs.opponentId].move == "paper")
+      (cs.myMove == "scissors" && opponentMove == "rock") ||
+      (cs.myMove == "paper" && opponentMove == "scissors") ||
+      (cs.myMove == "rock" && opponentMove == "paper")
     ) {
-      this.pushWinner(cs.rtdbData[cs.opponentId].fullname);
+      this.pushWinner(opponentName);
     }
     if (
-      (cs.myMove == "no-move" &&
-        cs.rtdbData[cs.opponentId].move == "no-move") ||
-      (cs.myMove == "no-move" &&
-        cs.rtdbData[cs.opponentId].move == "no-move") ||
-      (cs.myMove == "no-move" && cs.rtdbData[cs.opponentId].move == "no-move")
+      (cs.myMove == "no-move" && opponentMove == "no-move") ||
+      (cs.myMove == "no-move" && opponentMove == "no-move") ||
+      (cs.myMove == "no-move" && opponentMove == "no-move")
     ) {
       this.pushWinner("draw");
     }
     if (
-      (cs.myMove == "scissors" &&
-        cs.rtdbData[cs.opponentId].move == "no-move") ||
-      (cs.myMove == "paper" && cs.rtdbData[cs.opponentId].move == "no-move") ||
-      (cs.myMove == "rock" && cs.rtdbData[cs.opponentId].move == "no-move")
+      (cs.myMove == "scissors" && opponentMove == "no-move") ||
+      (cs.myMove == "paper" && opponentMove == "no-move") ||
+      (cs.myMove == "rock" && opponentMove == "no-move")
     ) {
       this.pushWinner(cs.fullname);
     }
     if (
-      (cs.myMove == "no-move" && cs.rtdbData[cs.opponentId].move == "rock") ||
-      (cs.myMove == "no-move" &&
-        cs.rtdbData[cs.opponentId].move == "scissors") ||
-      (cs.myMove == "no-move" && cs.rtdbData[cs.opponentId].move == "paper")
+      (cs.myMove == "no-move" && opponentMove == "rock") ||
+      (cs.myMove == "no-move" && opponentMove == "scissors") ||
+      (cs.myMove == "no-move" && opponentMove == "paper")
     ) {
-      this.pushWinner(cs.rtdbData[cs.opponentId].fullname);
+      this.pushWinner(opponentName);
     }
 
     this.setState(cs);
@@ -413,8 +303,6 @@ export const state = {
         rtdbRoomId: cs.rtdbRoomId,
         result: winner,
       }),
-    }).then((w) => {
-      console.log("winner: ", w);
     });
 
     this.setState(cs);
@@ -435,56 +323,50 @@ export const state = {
     });
     return filterUserWins.length / 2;
   },
-  checkPlayersStatus() {
-    const currentState = this.getState();
-    const currentGame = currentState.rtdbData;
+  listenToPlayersStatus() {
+    const cs = this.getState();
+    const cg = cs.rtdbData;
 
-    const players = Object.values(currentGame) as any;
+    const players = Object.values(cg) as any;
 
-    const isAllPlayersOnline = players.every((player: any) => player.online);
-    const isAllPlayersReady = players.every((player: any) => player.start);
-    const isAllPlayersMove = players.every((player: any) => player.move);
+    const everyoneIsOnline = players.every((player: any) => player.online);
+    const everyonePushedStart = players.every((player: any) => player.start);
+    const everyoneMoved = players.every((player: any) => player.move);
 
     if (players.length == 2) {
-      if (!isAllPlayersOnline) {
-        console.log("checkPlayersStatus funciona 2");
+      if (!everyoneIsOnline) {
         Router.go("/share-code");
       }
       if (
-        isAllPlayersOnline &&
-        !isAllPlayersReady &&
-        !isAllPlayersMove &&
+        everyoneIsOnline &&
+        !everyonePushedStart &&
+        !everyoneMoved &&
         location.pathname != "/results"
       ) {
-        console.log("checkPlayersStatus funciona 3");
         Router.go("/start");
       }
       if (
-        isAllPlayersOnline &&
-        !isAllPlayersReady &&
-        currentState.start == true &&
+        everyoneIsOnline &&
+        !everyonePushedStart &&
+        cs.start == true &&
         location.pathname != "/results"
       ) {
-        console.log("checkPlayersStatus funciona 4");
         Router.go("/waiting");
       }
-      if (isAllPlayersOnline && isAllPlayersReady && !isAllPlayersMove) {
-        console.log("checkPlayersStatus funciona 5");
+      if (everyoneIsOnline && everyonePushedStart && !everyoneMoved) {
         Router.go("/countdown");
       }
       if (
-        isAllPlayersOnline &&
-        isAllPlayersReady &&
-        isAllPlayersMove &&
+        everyoneIsOnline &&
+        everyonePushedStart &&
+        everyoneMoved &&
         location.pathname != "/results"
       ) {
-        console.log("checkPlayersStatus funciona 6");
         Router.go("/moves");
       }
     }
 
     if (players.length == 1) {
-      console.log("checkPlayersStatus funciona");
       Router.go("/share-code");
     }
   },
