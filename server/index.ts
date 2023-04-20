@@ -73,52 +73,6 @@ app.post("/rooms", (req, res) => {
     });
 });
 
-app.get("/room/:roomId", async function (req, res) {
-  const { roomId } = req.params;
-
-  const roomDoc = await roomsCollection.doc(roomId.toString()).get();
-
-  if (!roomDoc.exists) {
-    res.status(404).json({ error: "Room not found" });
-  } else {
-    const roomData = roomDoc.data();
-
-    res.status(200).json({ rtdbRoomId: roomData?.rtdbRoomId });
-  }
-});
-
-/* app.post("/rtdb/room/:rtdbRoomId", async function (req, res) {
-  const { rtdbRoomId } = req.params;
-  const { fullname } = req.query;
-
-  const roomRef = rtdb.ref(`rooms/${rtdbRoomId}/currentGame/${fullname}`);
-
-  const snapshot = await roomRef.once("value");
-
-  const numChildren = snapshot.numChildren();
-  const data = snapshot.val();
-
-  if (numChildren < 2 || data[fullname as string]) {
-    roomRef.child(fullname as string).set(req.body);
-
-    res.json({ message: "Player data added or updated" });
-  } else {
-    res.status(403).json({ error: "Room is full" });
-  }
-}); */
-
-app.get("/room/:roomId", (req, res) => {
-  const { roomId } = req.params;
-
-  roomsCollection
-    .doc(roomId.toString())
-    .get()
-    .then((roomData) => {
-      const data = roomData.data();
-      res.json(data);
-    });
-});
-
 app.post("/rtdb-data", async (req, res) => {
   const { rtdbRoomId } = req.body;
   const { userId } = req.body;
@@ -126,17 +80,6 @@ app.post("/rtdb-data", async (req, res) => {
   const { online } = req.body;
   const { start } = req.body;
   const { move } = req.body;
-
-  /* const userDataRef = rtdb.ref(`rooms/${rtdbRoomId}/currentGame/${userId}`);
-
-  userDataRef
-    .set({
-      fullname: fullname,
-      start: start,
-      online: online,
-      move: move,
-    })
-    .then((r) => res.json(r)); */
 
   const userDataRef = rtdb.ref(`rooms/${rtdbRoomId}/currentGame`);
 
@@ -159,27 +102,6 @@ app.post("/rtdb-data", async (req, res) => {
   }
 });
 
-app.delete("/remove-player", (req, res) => {
-  const { rtdbRoomId } = req.body;
-  const { userId } = req.body;
-
-  const roomMessagesRef = rtdb.ref(`rooms/${rtdbRoomId}/currentGame/${userId}`);
-
-  roomMessagesRef.remove().then((r) => res.json(r));
-});
-
-app.get("/rtdb-data/:roomId", (req, res) => {
-  const { roomId } = req.params;
-
-  roomsCollection
-    .doc(roomId.toString())
-    .get()
-    .then((roomData) => {
-      const data = roomData.data();
-      res.json(data);
-    });
-});
-
 app.post("/history", (req, res) => {
   const { rtdbRoomId } = req.body;
   const { result } = req.body;
@@ -189,7 +111,21 @@ app.post("/history", (req, res) => {
   historyRef.push({ result: result }).then((r) => res.json(r));
 });
 
-app.delete("/deleteroom", (req, res) => {
+app.get("/room/:roomId", async function (req, res) {
+  const { roomId } = req.params;
+
+  const roomDoc = await roomsCollection.doc(roomId.toString()).get();
+
+  if (!roomDoc.exists) {
+    res.status(404).json({ error: "Room not found" });
+  } else {
+    const roomData = roomDoc.data();
+
+    res.status(200).json({ rtdbRoomId: roomData?.rtdbRoomId });
+  }
+});
+
+app.delete("/remove-room", (req, res) => {
   const { roomId } = req.body;
 
   roomsCollection
@@ -203,7 +139,7 @@ app.delete("/deleteroom", (req, res) => {
     });
 });
 
-app.delete("/deleteuser", (req, res) => {
+app.delete("/remove-user", (req, res) => {
   const { userId } = req.body;
 
   usersCollection
