@@ -3,14 +3,15 @@ import { rtdb } from "./rtdb";
 import { map } from "lodash";
 import { Router } from "@vaadin/router";
 
-const API_BASE_URL = "http://localhost:3000";
+/* const API_BASE_URL = "http://localhost:3000"; */
 
-/* const api: any = { url: "" };
+var API_BASE_URL: any = "";
+
 if (process.env.ENV == "development") {
-  api.url = "http://localhost:3000";
+  API_BASE_URL = "http://localhost:3000";
 } else if (process.env.ENV == "production") {
-  api.url = process.env.BACKEND_URL;
-} */
+  API_BASE_URL = process.env.BACKEND_URL;
+}
 
 type Move = "rock" | "paper" | "scissors" | "no-move" | "";
 
