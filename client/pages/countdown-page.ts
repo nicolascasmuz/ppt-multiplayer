@@ -12,7 +12,7 @@ customElements.define(
         } else {
           state.setRTDBdata();
         }
-      }, 3000);
+      }, 5000);
 
       this.render();
     }
